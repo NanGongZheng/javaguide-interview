@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaGuide 面试突击 - Java 高级开发面试知识库</title>
+  <meta name="description" content="面向 Java 高级开发工程师面试的知识库，涵盖 Java 基础、Spring 生态、数据库、分布式系统、系统设计等核心知识点。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <a href="index.html" class="logo">
+        <span class="logo-icon">J</span>
+        <span>JavaGuide 面试突击</span>
+      </a>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      <a href="https://github.com" class="github-link" target="_blank" title="GitHub">⭐</a>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">导航</div>
+      <a href="index.html" class="sidebar-link active"><span class="icon">🏠</span>首页</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Java 核心</div>
+      <a href="pages/java-core.html" class="sidebar-link"><span class="icon">☕</span>Java 基础与进阶</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">框架与生态</div>
+      <a href="pages/spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">数据库</div>
+      <a href="pages/database.html" class="sidebar-link"><span class="icon">🗄️</span>MySQL 与 Redis</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">分布式与架构</div>
+      <a href="pages/distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">面试专区</div>
+      <a href="pages/interview.html" class="sidebar-link"><span class="icon">🎯</span>高频面试题精选</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="content">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-badge">📚 面向 Java 高级开发工程师面试</div>
+        <h1>系统化备战<br>Java 后端面试</h1>
+        <p>参考 JavaGuide 知识体系，覆盖 Java 核心、Spring 生态、数据库、分布式系统、系统设计等高频考点，助你拿下 Offer。</p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">6</div>
+            <div class="stat-label">核心模块</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">100+</div>
+            <div class="stat-label">知识点</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">面试题</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Start Cards -->
+      <h2 class="section-title">📖 知识模块</h2>
+      <div class="cards-grid">
+        <a href="pages/java-core.html" class="card">
+          <div class="card-icon" style="background:linear-gradient(135deg,#f8982040,#f8982020);">☕</div>
+          <h3>Java 基础与进阶</h3>
+          <p>集合框架源码、并发编程、JVM 调优、Java 8-21 新特性，夯实底层功底。</p>
+          <span class="card-tag" style="background:var(--tag-java);">核心</span>
+        </a>
+        <a href="pages/spring.html" class="card">
+          <div class="card-icon" style="background:linear-gradient(135deg,#6db33f40,#6db33f20);">🌱</div>
+          <h3>Spring 全家桶</h3>
+          <p>Spring Boot 自动配置、Spring MVC 流程、Spring Cloud 微服务、事务管理。</p>
+          <span class="card-tag" style="background:var(--tag-spring);">框架</span>
+        </a>
+        <a href="pages/database.html" class="card">
+          <div class="card-icon" style="background:linear-gradient(135deg,#33679140,#33679120);">🗄️</div>
+          <h3>MySQL 与 Redis</h3>
+          <p>索引优化、MVCC 原理、慢查询排查、Redis 数据结构与高可用集群方案。</p>
+          <span class="card-tag" style="background:var(--tag-db);">数据库</span>
+        </a>
+        <a href="pages/distribution.html" class="card">
+          <div class="card-icon" style="background:linear-gradient(135deg,#8b5cf640,#8b5cf620);">🏗️</div>
+          <h3>分布式与系统设计</h3>
+          <p>分布式锁、消息队列、CAP 理论、经典系统设计题与常用设计模式。</p>
+          <span class="card-tag" style="background:var(--tag-design);">架构</span>
+        </a>
+        <a href="pages/interview.html" class="card">
+          <div class="card-icon" style="background:linear-gradient(135deg,#ef444440,#ef444420);">🎯</div>
+          <h3>高频面试题精选</h3>
+          <p>精选 50+ 道高频面试题，覆盖项目经验、场景设计、底层原理。</p>
+          <span class="card-tag" style="background:var(--tag-mq);">面试</span>
+        </a>
+      </div>
+
+      <!-- Study Roadmap -->
+      <h2 class="section-title">🗺️ 学习路线</h2>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:48px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+          <div style="text-align:center;padding:16px;border-radius:10px;background:var(--bg-secondary);">
+            <div style="font-size:28px;margin-bottom:8px;">1️⃣</div>
+            <div style="font-weight:700;font-size:15px;">Java 核心</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">集合 → 并发 → JVM → 新特性</div>
+          </div>
+          <div style="text-align:center;padding:16px;border-radius:10px;background:var(--bg-secondary);">
+            <div style="font-size:28px;margin-bottom:8px;">2️⃣</div>
+            <div style="font-weight:700;font-size:15px;">Spring 生态</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Boot → MVC → Cloud → 事务</div>
+          </div>
+          <div style="text-align:center;padding:16px;border-radius:10px;background:var(--bg-secondary);">
+            <div style="font-size:28px;margin-bottom:8px;">3️⃣</div>
+            <div style="font-weight:700;font-size:15px;">数据库</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">MySQL → Redis → 索引优化</div>
+          </div>
+          <div style="text-align:center;padding:16px;border-radius:10px;background:var(--bg-secondary);">
+            <div style="font-size:28px;margin-bottom:8px;">4️⃣</div>
+            <div style="font-weight:700;font-size:15px;">分布式 & 设计</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">MQ → 分布式锁 → 系统设计</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+        <p style="margin-top:4px;">参考 <a href="https://javaguide.cn" target="_blank">JavaGuide</a> · 内容仅供学习交流</p>
+      </footer>
+    </div>
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MySQL 与 Redis - JavaGuide 面试突击</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>JavaGuide 面试突击</span></a>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      <a href="https://github.com" class="github-link" target="_blank" title="GitHub">⭐</a>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section"><div class="sidebar-title">导航</div><a href="../index.html" class="sidebar-link"><span class="icon">🏠</span>首页</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">Java 核心</div><a href="java-core.html" class="sidebar-link"><span class="icon">☕</span>Java 基础与进阶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">框架与生态</div><a href="spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">数据库</div><a href="database.html" class="sidebar-link active"><span class="icon">🗄️</span>MySQL 与 Redis</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">分布式与架构</div><a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">面试专区</div><a href="interview.html" class="sidebar-link"><span class="icon">🎯</span>高频面试题精选</a></div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <div class="content">
+      <div class="breadcrumb"><a href="../index.html">首页</a> <span>/</span> <span>MySQL 与 Redis</span></div>
+
+      <div class="page-header">
+        <h1>🗄️ MySQL 与 Redis</h1>
+        <p class="subtitle">深入理解 MySQL 索引原理、事务机制、查询优化，以及 Redis 数据结构、持久化方案、高可用集群架构。</p>
+      </div>
+
+      <div class="toc">
+        <h4>📑 目录</h4>
+        <ul class="toc-list">
+          <li><a href="#mysql-index">MySQL 索引</a></li>
+          <li><a href="#mysql-transaction">MySQL 事务</a></li>
+          <li><a href="#mysql-optimize">查询优化</a></li>
+          <li><a href="#redis">Redis 基础</a></li>
+          <li><a href="#redis-ha">Redis 高可用</a></li>
+          <li><a href="#redis-spring">Spring 整合 Redis</a></li>
+        </ul>
+      </div>
+
+      <!-- ==================== MySQL 索引 ==================== -->
+      <section class="knowledge-section" id="mysql-index">
+        <h2>🔍 MySQL 索引</h2>
+
+        <h3>B+ 树原理</h3>
+        <p>InnoDB 使用 B+ 树作为索引结构，理解 B+ 树是理解索引优化的基础：</p>
+        <ul>
+          <li><strong>非叶子节点</strong>只存 key（索引值），不存 data，因此单个节点能存更多 key，树更矮</li>
+          <li><strong>叶子节点</strong>存放完整数据，且通过双向链表相连，支持范围查询</li>
+          <li><strong>树高通常 2-4 层</strong>：千万级数据只需 2-3 次磁盘 IO</li>
+        </ul>
+
+        <h3>聚簇索引 vs 非聚簇索引</h3>
+        <table>
+          <tr><th>类型</th><th>说明</th><th>特点</th></tr>
+          <tr><td>聚簇索引（主键索引）</td><td>叶子节点存完整行数据</td><td>一张表只有一个，主键即数据</td></tr>
+          <tr><td>非聚簇索引（二级索引）</td><td>叶子节点存主键值</td><td>需要回表查询完整数据</td></tr>
+        </table>
+
+        <h4>覆盖索引</h4>
+        <p>当查询的字段全部在索引中时，无需回表，称为覆盖索引。EXPLAIN 中 Extra 显示 <code>Using index</code>。</p>
+        <pre data-lang="sql"><span class="cm">-- 联合索引 (name, age)</span>
+<span class="kw">SELECT</span> name, age <span class="kw">FROM</span> user <span class="kw">WHERE</span> name = <span class="str">'张三'</span>;
+<span class="cm">-- ✅ 覆盖索引，不需要回表</span>
+
+<span class="kw">SELECT</span> name, age, email <span class="kw">FROM</span> user <span class="kw">WHERE</span> name = <span class="str">'张三'</span>;
+<span class="cm">-- ❌ email 不在索引中，需要回表</span></pre>
+
+        <h3>联合索引与最左前缀原则</h3>
+        <p>联合索引 <code>(a, b, c)</code> 相当于创建了 <code>(a)</code>、<code>(a, b)</code>、<code>(a, b, c)</code> 三个索引。</p>
+        <pre data-lang="sql"><span class="cm">-- 索引 (a, b, c)</span>
+<span class="kw">WHERE</span> a = 1 <span class="kw">AND</span> b = 2 <span class="kw">AND</span> c = 3  <span class="cm">-- ✅ 全部命中</span>
+<span class="kw">WHERE</span> a = 1 <span class="kw">AND</span> b = 2             <span class="cm">-- ✅ 命中 a, b</span>
+<span class="kw">WHERE</span> a = 1                        <span class="cm">-- ✅ 命中 a</span>
+<span class="kw">WHERE</span> b = 2 <span class="kw">AND</span> c = 3             <span class="cm">-- ❌ 跳过 a，索引失效</span>
+<span class="kw">WHERE</span> a = 1 <span class="kw">AND</span> c = 3             <span class="cm">-- ⚠️ 只命中 a，c 无法使用索引</span></pre>
+
+        <h3>索引失效的常见场景</h3>
+        <ol>
+          <li><strong>对索引列使用函数或运算</strong>：<code>WHERE YEAR(create_time) = 2024</code></li>
+          <li><strong>隐式类型转换</strong>：<code>WHERE phone = 13800000000</code>（phone 是 varchar）</li>
+          <li><strong>LIKE 以通配符开头</strong>：<code>WHERE name LIKE '%张'</code></li>
+          <li><strong>OR 条件中有非索引列</strong></li>
+          <li><strong>违反最左前缀原则</strong></li>
+          <li><strong>使用 != 或 NOT IN</strong>（可能不走索引，取决于数据分布）</li>
+        </ol>
+      </section>
+
+      <!-- ==================== MySQL 事务 ==================== -->
+      <section class="knowledge-section" id="mysql-transaction">
+        <h2>🔒 MySQL 事务</h2>
+
+        <h3>ACID 特性</h3>
+        <ul>
+          <li><strong>原子性（Atomicity）</strong>：undo log 实现回滚</li>
+          <li><strong>一致性（Consistency）</strong>：事务前后数据完整性不变</li>
+          <li><strong>隔离性（Isolation）</strong>：MVCC + 锁机制实现</li>
+          <li><strong>持久性（Durability）</strong>：redo log 实现崩溃恢复</li>
+        </ul>
+
+        <h3>隔离级别</h3>
+        <table>
+          <tr><th>隔离级别</th><th>脏读</th><th>不可重复读</th><th>幻读</th></tr>
+          <tr><td>READ UNCOMMITTED</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>READ COMMITTED（Oracle 默认）</td><td>❌</td><td>✅</td><td>✅</td></tr>
+          <tr><td>REPEATABLE READ（MySQL 默认）</td><td>❌</td><td>❌</td><td>部分解决 ✅</td></tr>
+          <tr><td>SERIALIZABLE</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </table>
+
+        <h3>MVCC 原理（高频）</h3>
+        <p>MVCC（多版本并发控制）通过 Read View 和 undo log 版本链实现无锁读：</p>
+        <ul>
+          <li><strong>隐藏字段</strong>：每行数据有 <code>DB_TRX_ID</code>（最后修改的事务ID）和 <code>DB_ROLL_PTR</code>（回滚指针，指向 undo log）</li>
+          <li><strong>undo log 版本链</strong>：通过 ROLL_PTR 串成链表，记录数据的历史版本</li>
+          <li><strong>Read View</strong>：事务开始时创建，包含活跃事务ID列表，用于判断哪个版本可见</li>
+        </ul>
+
+        <p><strong>RC vs RR 的区别：</strong></p>
+        <ul>
+          <li><strong>READ COMMITTED</strong>：每次 SELECT 都创建新的 Read View</li>
+          <li><strong>REPEATABLE READ</strong>：只在事务第一次 SELECT 时创建 Read View，之后复用</li>
+        </ul>
+
+        <h3>InnoDB 锁机制</h3>
+        <table>
+          <tr><th>锁类型</th><th>粒度</th><th>说明</th></tr>
+          <tr><td>共享锁（S Lock）</td><td>行级</td><td>读锁，多个事务可共享</td></tr>
+          <tr><td>排他锁（X Lock）</td><td>行级</td><td>写锁，互斥</td></tr>
+          <tr><td>意向锁（IS/IX）</td><td>表级</td><td>标识事务意图，加速锁冲突判断</td></tr>
+          <tr><td>间隙锁（Gap Lock）</td><td>行间</td><td>RR 级别下防止幻读</td></tr>
+          <tr><td>临键锁（Next-Key Lock）</td><td>行+间隙</td><td>= Record Lock + Gap Lock</td></tr>
+        </table>
+      </section>
+
+      <!-- ==================== 查询优化 ==================== -->
+      <section class="knowledge-section" id="mysql-optimize">
+        <h2>⚡ 查询优化</h2>
+
+        <h3>EXPLAIN 分析</h3>
+        <pre data-lang="sql"><span class="kw">EXPLAIN SELECT</span> * <span class="kw">FROM</span> user <span class="kw">WHERE</span> name = <span class="str">'张三'</span>;</pre>
+        <table>
+          <tr><th>字段</th><th>关注点</th></tr>
+          <tr><td>type</td><td>访问类型：ALL(全表扫描) → index → range → ref → eq_ref → const</td></tr>
+          <tr><td>key</td><td>实际使用的索引</td></tr>
+          <tr><td>rows</td><td>预估扫描行数</td></tr>
+          <tr><td>Extra</td><td>Using index(覆盖索引)、Using filesort(文件排序)、Using temporary(临时表)</td></tr>
+        </table>
+
+        <h3>慢查询优化思路</h3>
+        <ol>
+          <li>开启慢查询日志定位问题 SQL</li>
+          <li>EXPLAIN 分析执行计划</li>
+          <li>优化方向：
+            <ul>
+              <li>添加合适的索引（覆盖索引优先）</li>
+              <li>避免 SELECT *，只查需要的字段</li>
+              <li>避免索引失效的写法</li>
+              <li>大分页优化：<code>SELECT * FROM t WHERE id > #{lastId} LIMIT 20</code>（游标分页）</li>
+              <li>JOIN 优化：小表驱动大表，被驱动表的关联字段加索引</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>分库分表</h3>
+        <p>当单表数据量超过千万级别时考虑分表：</p>
+        <ul>
+          <li><strong>垂直分库</strong>：按业务拆分（用户库、订单库、商品库）</li>
+          <li><strong>水平分表</strong>：按分片键（如 user_id % N）将数据分散到多张表</li>
+          <li><strong>常用中间件</strong>：ShardingSphere、MyCat</li>
+          <li><strong>分片策略</strong>：取模、范围、一致性 Hash</li>
+        </ul>
+      </section>
+
+      <!-- ==================== Redis ==================== -->
+      <section class="knowledge-section" id="redis">
+        <h2>🔴 Redis 基础</h2>
+
+        <h3>五种基础数据类型</h3>
+        <table>
+          <tr><th>类型</th><th>底层编码</th><th>典型场景</th></tr>
+          <tr><td>String</td><td>int / embstr / raw</td><td>缓存、计数器、分布式锁</td></tr>
+          <tr><td>List</td><td>ziplist / quicklist</td><td>消息队列、最新列表</td></tr>
+          <tr><td>Hash</td><td>ziplist / hashtable</td><td>对象存储（用户信息）</td></tr>
+          <tr><td>Set</td><td>intset / hashtable</td><td>去重、共同关注、抽奖</td></tr>
+          <tr><td>ZSet</td><td>ziplist / skiplist + hashtable</td><td>排行榜、延迟队列</td></tr>
+        </table>
+
+        <h3>跳表（SkipList）原理</h3>
+        <p>ZSet 底层使用跳表（而非红黑树），原因是：</p>
+        <ul>
+          <li>跳表实现简单，范围查询高效（直接遍历底层链表）</li>
+          <li>插入/删除时只需调整局部指针，不像红黑树需要全局平衡</li>
+          <li>跳表的查找时间复杂度 O(log n)，与平衡树相当</li>
+        </ul>
+
+        <h3>缓存三大问题</h3>
+
+        <h4>缓存穿透</h4>
+        <p>查询不存在的数据，缓存和数据库都查不到，每次都打到数据库。</p>
+        <ul>
+          <li><strong>布隆过滤器</strong>：在缓存前加一层布隆过滤器，快速判断 key 是否可能存在</li>
+          <li><strong>缓存空值</strong>：查询结果为空时也缓存，设置较短过期时间</li>
+        </ul>
+
+        <h4>缓存击穿</h4>
+        <p>热点 key 过期瞬间，大量请求打到数据库。</p>
+        <ul>
+          <li><strong>互斥锁</strong>：只允许一个线程去数据库加载，其他线程等待</li>
+          <li><strong>逻辑过期</strong>：不设置 TTL，在 value 中存逻辑过期时间，过期后异步更新</li>
+        </ul>
+
+        <h4>缓存雪崩</h4>
+        <p>大量 key 同时过期或 Redis 宕机，请求全部打到数据库。</p>
+        <ul>
+          <li><strong>过期时间加随机值</strong>：避免同时过期</li>
+          <li><strong>集群高可用</strong>：Redis Cluster / Sentinel</li>
+          <li><strong>限流降级</strong>：对数据库请求限流</li>
+        </ul>
+
+        <h3>缓存与数据库一致性</h3>
+        <p>推荐方案：<strong>Cache Aside Pattern</strong></p>
+        <ol>
+          <li><strong>读</strong>：先读缓存，miss 则读数据库并写入缓存</li>
+          <li><strong>写</strong>：先更新数据库，再删除缓存</li>
+        </ol>
+
+        <div class="info-box warning">
+          <strong>⚠️ 延迟双删</strong>
+          先删缓存 → 更新数据库 → 延迟一段时间 → 再删缓存。应对"读请求在写请求更新数据库后、删缓存前把旧值写入缓存"的并发问题。
+        </div>
+      </section>
+
+      <!-- ==================== Redis 高可用 ==================== -->
+      <section class="knowledge-section" id="redis-ha">
+        <h2>🛡️ Redis 高可用</h2>
+
+        <h3>持久化</h3>
+        <table>
+          <tr><th>方式</th><th>原理</th><th>优缺点</th></tr>
+          <tr><td>RDB（快照）</td><td>fork 子进程，将内存数据序列化到 dump.rdb</td><td>恢复快，但可能丢失最后一次快照后的数据</td></tr>
+          <tr><td>AOF（追加日志）</td><td>记录每条写命令到 appendonly.aof</td><td>数据更安全（everysec），但文件大、恢复慢</td></tr>
+          <tr><td>混合持久化</td><td>RDB + 增量 AOF</td><td>Redis 4.0+ 推荐，兼顾恢复速度和数据安全</td></tr>
+        </table>
+
+        <h3>主从复制</h3>
+        <ul>
+          <li>全量同步：首次连接，Master 生成 RDB 发送给 Slave</li>
+          <li>增量同步：断线重连后，基于 repl_backlog 做增量同步</li>
+        </ul>
+
+        <h3>Sentinel 哨兵</h3>
+        <p>自动监控和故障转移：</p>
+        <ol>
+          <li>每个 Sentinel 每秒向 Master 发送 PING，主观下线（SDOWN）</li>
+          <li>当 quorum 个 Sentinel 都认为 Master 下线 → 客观下线（ODOWN）</li>
+          <li>Sentinel 选举 Leader，由 Leader 执行故障转移（选新 Master）</li>
+        </ol>
+
+        <h3>Redis Cluster</h3>
+        <ul>
+          <li><strong>数据分片</strong>：16384 个 slot，CRC16(key) % 16384 定位 slot</li>
+          <li><strong>去中心化</strong>：每个节点都能处理请求，不在自己 slot 范围则 MOVED 重定向</li>
+          <li><strong>扩缩容</strong>：添加/移除节点时迁移 slot</li>
+          <li><strong>故障转移</strong>：节点间互相 PING，超过半数认为下线则触发选举</li>
+        </ul>
+      </section>
+
+      <!-- ==================== Spring 整合 Redis ==================== -->
+      <section class="knowledge-section" id="redis-spring">
+        <h2>🔗 Spring 整合 Redis</h2>
+
+        <h3>常用注解</h3>
+        <pre data-lang="java"><span class="ann">@Cacheable</span>(value = <span class="str">"user"</span>, key = <span class="str">"#id"</span>)
+<span class="kw">public</span> User getUserById(Long id) {
+    <span class="kw">return</span> userMapper.selectById(id);
+}
+
+<span class="ann">@CachePut</span>(value = <span class="str">"user"</span>, key = <span class="str">"#user.id"</span>)
+<span class="kw">public</span> User updateUser(User user) {
+    userMapper.updateById(user);
+    <span class="kw">return</span> user;
+}
+
+<span class="ann">@CacheEvict</span>(value = <span class="str">"user"</span>, key = <span class="str">"#id"</span>)
+<span class="kw">public void</span> deleteUser(Long id) {
+    userMapper.deleteById(id);
+}</pre>
+
+        <h3>分布式锁实现</h3>
+        <pre data-lang="java"><span class="cm">// Redisson 分布式锁（推荐）</span>
+<span class="ann">@Resource</span>
+<span class="kw">private</span> RedissonClient redissonClient;
+
+<span class="kw">public void</span> deductStock() {
+    RLock lock = redissonClient.getLock(<span class="str">"stock:lock"</span>);
+    <span class="kw">try</span> {
+        <span class="cm">// 尝试加锁，最多等待 3 秒，10 秒自动释放</span>
+        <span class="kw">if</span> (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+            <span class="cm">// 业务逻辑</span>
+        }
+    } <span class="kw">finally</span> {
+        <span class="kw">if</span> (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+        }
+    }
+}</pre>
+      </section>
+
+      <footer class="footer">
+        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+      </footer>
+    </div>
+  </main>
+  <script src="../js/main.js"></script>
+</body>
+</html>

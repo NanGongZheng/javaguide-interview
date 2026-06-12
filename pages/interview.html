@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高频面试题精选 - JavaGuide 面试突击</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>JavaGuide 面试突击</span></a>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      <a href="https://github.com" class="github-link" target="_blank" title="GitHub">⭐</a>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section"><div class="sidebar-title">导航</div><a href="../index.html" class="sidebar-link"><span class="icon">🏠</span>首页</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">Java 核心</div><a href="java-core.html" class="sidebar-link"><span class="icon">☕</span>Java 基础与进阶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">框架与生态</div><a href="spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">数据库</div><a href="database.html" class="sidebar-link"><span class="icon">🗄️</span>MySQL 与 Redis</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">分布式与架构</div><a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">面试专区</div><a href="interview.html" class="sidebar-link active"><span class="icon">🎯</span>高频面试题精选</a></div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <div class="content">
+      <div class="breadcrumb"><a href="../index.html">首页</a> <span>/</span> <span>高频面试题精选</span></div>
+
+      <div class="page-header">
+        <h1>🎯 高频面试题精选</h1>
+        <p class="subtitle">精选 50+ 道 Java 高级开发面试高频题目，点击展开查看详细解答。涵盖 Java 基础、框架原理、数据库、分布式等核心领域。</p>
+      </div>
+
+      <!-- ===== Java 基础 ===== -->
+      <section class="knowledge-section">
+        <h2>☕ Java 基础</h2>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>HashMap 的底层实现原理是什么？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>JDK 8 中 HashMap 采用 <strong>数组 + 链表 + 红黑树</strong> 结构：</p>
+            <ul>
+              <li>默认容量 16，负载因子 0.75，当元素数量超过 12（16×0.75）时扩容为原来的 2 倍</li>
+              <li>通过 <code>(n-1) & hash</code> 定位桶位置，hash 值的高 16 位异或低 16 位减少碰撞</li>
+              <li>链表长度 ≥ 8 且数组长度 ≥ 64 时转红黑树；红黑树节点 ≤ 6 时退化为链表</li>
+              <li>JDK 8 用<strong>尾插法</strong>替代 JDK 7 的头插法，解决了多线程扩容时的环形链表问题</li>
+              <li>HashMap 非线程安全，并发场景使用 ConcurrentHashMap</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>ConcurrentHashMap 如何保证线程安全？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>JDK 8 中 ConcurrentHashMap 采用 <strong>CAS + synchronized</strong>：</p>
+            <ul>
+              <li><strong>初始化</strong>：CAS 操作设置 sizeCtl</li>
+              <li><strong>put</strong>：桶为空时 CAS 插入；桶不为空时 synchronized 锁住头节点</li>
+              <li><strong>扩容</strong>：多线程协助迁移（transfer），每个线程负责一段</li>
+              <li><strong>size()</strong>：baseCount + CounterCell[] 分散计数，类似 LongAdder</li>
+            </ul>
+            <p>对比 JDK 7 的 Segment 分段锁，锁粒度从段级别降到桶级别，并发度更高。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>synchronized 和 ReentrantLock 有什么区别？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>实现</strong>：synchronized 是 JVM 关键字（monitorenter/monitorexit），ReentrantLock 是 API 层面（基于 AQS）</li>
+              <li><strong>锁释放</strong>：synchronized 自动释放，ReentrantLock 需手动 unlock（finally 中）</li>
+              <li><strong>可中断</strong>：synchronized 不可中断，ReentrantLock 可通过 lockInterruptibly() 中断</li>
+              <li><strong>公平锁</strong>：synchronized 只有非公平，ReentrantLock 支持公平/非公平</li>
+              <li><strong>条件变量</strong>：synchronized 用 wait/notify（单条件），ReentrantLock 用 Condition（多条件）</li>
+              <li><strong>锁升级</strong>：synchronized 有偏向锁→轻量级锁→重量级锁的升级过程</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>volatile 关键字的作用和原理？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>volatile 保证<strong>可见性</strong>和<strong>有序性</strong>，不保证原子性：</p>
+            <ul>
+              <li><strong>可见性</strong>：修改后立即刷新到主内存，其他线程读取时从主内存加载（通过内存屏障实现）</li>
+              <li><strong>有序性</strong>：禁止指令重排序（写前加 StoreStore 屏障，读后加 LoadLoad 屏障）</li>
+              <li><strong>不保证原子性</strong>：count++ 是 read-modify-write 三步操作，多线程下仍需加锁或用 AtomicInteger</li>
+            </ul>
+            <p>典型应用：DCL 单例中防止指令重排、状态标志位。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>线程池的核心参数有哪些？任务提交流程是什么？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>七个核心参数：</strong>corePoolSize（核心线程数）、maximumPoolSize（最大线程数）、keepAliveTime（非核心线程存活时间）、unit（时间单位）、workQueue（任务队列）、threadFactory（线程工厂）、handler（拒绝策略）。</p>
+            <p><strong>任务提交流程：</strong></p>
+            <ol>
+              <li>线程数 &lt; corePoolSize → 创建核心线程执行</li>
+              <li>核心线程已满 → 任务入 workQueue</li>
+              <li>队列已满 → 创建非核心线程（不超过 maximumPoolSize）</li>
+              <li>线程和队列都满 → 执行拒绝策略</li>
+            </ol>
+            <p><strong>四种拒绝策略：</strong>AbortPolicy（抛异常）、CallerRunsPolicy（调用者执行）、DiscardPolicy（丢弃）、DiscardOldestPolicy（丢弃最老）。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>JVM 垃圾回收算法有哪些？G1 收集器的特点？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>四种基础算法：</strong></p>
+            <ul>
+              <li><strong>标记-清除</strong>：先标记后清除，产生内存碎片</li>
+              <li><strong>标记-整理</strong>：标记后移动存活对象，无碎片但开销大</li>
+              <li><strong>复制算法</strong>：分两块，存活对象复制到另一块，浪费空间</li>
+              <li><strong>分代收集</strong>：新生代（复制）+ 老年代（标记整理），JVM 实际策略</li>
+            </ul>
+            <p><strong>G1 收集器特点：</strong></p>
+            <ul>
+              <li>将堆划分为多个等大的 Region，每个 Region 可以是 Eden/Survivor/Old/Humongous</li>
+              <li>可预测停顿时间（-XX:MaxGCPauseMillis），优先回收价值最大的 Region</li>
+              <li>JDK 9+ 默认收集器，适合大堆（6GB+）</li>
+            </ul>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== Spring ===== -->
+      <section class="knowledge-section">
+        <h2>🌱 Spring</h2>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Spring Boot 自动配置原理是什么？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ol>
+              <li><code>@SpringBootApplication</code> 组合了 <code>@EnableAutoConfiguration</code></li>
+              <li><code>@EnableAutoConfiguration</code> 通过 <code>@Import(AutoConfigurationImportSelector)</code> 导入配置</li>
+              <li>AutoConfigurationImportSelector 读取 <code>META-INF/spring.factories</code> 中的自动配置类</li>
+              <li>每个配置类通过 <code>@Conditional</code> 系列注解判断是否生效（@ConditionalOnClass、@ConditionalOnMissingBean 等）</li>
+              <li>生效的配置类向容器注册 Bean</li>
+            </ol>
+            <p>Spring Boot 3.x 改用 <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> 文件。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Spring Bean 的生命周期是怎样的？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ol>
+              <li>实例化（构造器 / 工厂方法）</li>
+              <li>属性赋值（@Autowired、@Value）</li>
+              <li>Aware 回调（BeanNameAware → BeanFactoryAware → ApplicationContextAware）</li>
+              <li>BeanPostProcessor#postProcessBeforeInitialization</li>
+              <li>初始化（@PostConstruct → InitializingBean → init-method）</li>
+              <li>BeanPostProcessor#postProcessAfterInitialization（AOP 代理在此创建）</li>
+              <li>使用 Bean</li>
+              <li>销毁（@PreDestroy → DisposableBean → destroy-method）</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Spring 事务失效的常见场景有哪些？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ol>
+              <li><strong>方法非 public</strong>：Spring AOP 只能代理 public 方法</li>
+              <li><strong>自调用</strong>：同类中 A 调 B，B 的 @Transactional 不生效（未走代理）</li>
+              <li><strong>异常被 catch</strong>：吞掉异常后 Spring 感知不到</li>
+              <li><strong>抛出非 RuntimeException</strong>：默认只回滚 RuntimeException 和 Error</li>
+              <li><strong>传播行为设置错误</strong>：如 NOT_SUPPORTED</li>
+              <li><strong>rollbackFor 未指定</strong>：需要回滚 checked 异常时需显式声明</li>
+              <li><strong>数据库引擎不支持</strong>：MyISAM 不支持事务</li>
+              <li><strong>多线程调用</strong>：新线程不在同一个事务上下文中</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Spring 循环依赖是如何解决的？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>Spring 通过<strong>三级缓存</strong>解决 singleton 作用域的 setter/field 注入循环依赖：</p>
+            <ul>
+              <li><strong>一级缓存 singletonObjects</strong>：完全初始化好的 Bean</li>
+              <li><strong>二级缓存 earlySingletonObjects</strong>：提前曝光的 Bean（可能是代理对象）</li>
+              <li><strong>三级缓存 singletonFactories</strong>：ObjectFactory，用于创建早期引用</li>
+            </ul>
+            <p><strong>不能解决的场景：</strong>构造器注入的循环依赖（对象还没创建完）。Spring Boot 2.6+ 默认禁止循环依赖。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>AOP 的实现原理是什么？JDK 动态代理和 CGLIB 的区别？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>JDK 动态代理</strong>：基于接口，通过 <code>Proxy.newProxyInstance()</code> 生成代理类，只能代理实现了接口的类</li>
+              <li><strong>CGLIB 代理</strong>：基于继承，通过字节码技术生成目标类的子类，不需要接口，但不能代理 final 类和方法</li>
+              <li><strong>Spring 选择策略</strong>：有接口默认用 JDK 代理，无接口用 CGLIB。Spring Boot 2.x 默认全部使用 CGLIB</li>
+              <li><strong>性能对比</strong>：JDK 代理创建快、调用慢；CGLIB 创建慢、调用快。现代 JDK 版本中差距很小</li>
+            </ul>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== 数据库 ===== -->
+      <section class="knowledge-section">
+        <h2>🗄️ 数据库</h2>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MySQL 索引为什么使用 B+ 树而不是 B 树或红黑树？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>vs B 树</strong>：B+ 树非叶子节点不存数据，单个节点能存更多 key，树更矮，磁盘 IO 更少；叶子节点用链表相连，范围查询高效</li>
+              <li><strong>vs 红黑树</strong>：红黑树是二叉树，树高远大于 B+ 树（千万数据可能 20+ 层），磁盘 IO 太多</li>
+              <li><strong>vs Hash 索引</strong>：Hash 不支持范围查询和排序，只适合等值查询</li>
+            </ul>
+            <p>InnoDB 中千万级数据的 B+ 树通常只有 3-4 层，每次查询只需 3-4 次磁盘 IO。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MVCC 的原理是什么？RC 和 RR 隔离级别有什么区别？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>MVCC（多版本并发控制）通过 <strong>undo log 版本链 + Read View</strong> 实现无锁读：</p>
+            <ul>
+              <li>每行有隐藏字段 DB_TRX_ID（修改事务ID）和 DB_ROLL_PTR（回滚指针）</li>
+              <li>undo log 通过 ROLL_PTR 串成版本链</li>
+              <li>事务开始时创建 Read View，包含活跃事务ID列表，用于判断版本可见性</li>
+            </ul>
+            <p><strong>RC vs RR：</strong></p>
+            <ul>
+              <li>READ COMMITTED：每次 SELECT 创建新 Read View</li>
+              <li>REPEATABLE READ：只在第一次 SELECT 创建 Read View，之后复用</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>如何优化慢 SQL？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ol>
+              <li>开启慢查询日志定位问题 SQL（slow_query_log）</li>
+              <li>EXPLAIN 分析执行计划，关注 type、key、rows、Extra</li>
+              <li><strong>优化方向</strong>：
+                <ul>
+                  <li>添加合适索引，优先覆盖索引避免回表</li>
+                  <li>避免 SELECT *，只查需要的字段</li>
+                  <li>避免索引失效写法（函数、隐式转换、LIKE %前缀）</li>
+                  <li>大分页优化：游标分页 <code>WHERE id > lastId LIMIT 20</code></li>
+                  <li>JOIN 优化：小表驱动大表，被驱动表关联字段加索引</li>
+                  <li>避免在 WHERE 中对字段做运算</li>
+                </ul>
+              </li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Redis 缓存穿透、击穿、雪崩分别是什么？如何解决？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>穿透</strong>：查询不存在的数据。解决：布隆过滤器 + 缓存空值</li>
+              <li><strong>击穿</strong>：热点 key 过期瞬间大量请求。解决：互斥锁（setnx）+ 逻辑过期</li>
+              <li><strong>雪崩</strong>：大量 key 同时过期或 Redis 宕机。解决：过期时间加随机值 + 集群高可用 + 限流降级</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>Redis 和 MySQL 数据一致性如何保证？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>推荐 <strong>Cache Aside Pattern</strong>：读先读缓存，miss 则读 DB 并写缓存；写先更新 DB，再删缓存。</p>
+            <p><strong>延迟双删方案：</strong>先删缓存 → 更新 DB → 延迟 N 毫秒 → 再删缓存。应对并发读写时旧值被写入缓存的问题。</p>
+            <p><strong>更强一致性方案：</strong>监听 binlog（Canal）→ 更新/删除缓存，实现最终一致性。</p>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== 分布式 ===== -->
+      <section class="knowledge-section">
+        <h2>🏗️ 分布式</h2>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>分布式锁有哪些实现方案？各自的优缺点？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>Redis</strong>（SET NX EX + Lua 解锁）：性能高，推荐用 Redisson（看门狗自动续期）。缺点：主从切换可能丢锁</li>
+              <li><strong>ZooKeeper</strong>（临时顺序节点）：强一致，自动释放。缺点：性能较低，依赖 ZK 集群</li>
+              <li><strong>数据库</strong>（唯一索引 / FOR UPDATE）：简单无额外依赖。缺点：性能差，死锁风险</li>
+            </ul>
+            <p>生产环境推荐 Redisson 或 ZooKeeper。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>如何保证消息不丢失？如何保证消息不重复消费？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>消息不丢失（三个环节）：</strong></p>
+            <ul>
+              <li>生产者 → MQ：开启确认机制（confirm/acks=all）</li>
+              <li>MQ 自身：持久化 + 同步刷盘 + 多副本</li>
+              <li>MQ → 消费者：手动 ACK，消费成功后确认</li>
+            </ul>
+            <p><strong>幂等性（防重复消费）：</strong></p>
+            <ul>
+              <li>数据库唯一索引</li>
+              <li>Redis SETNX 记录已处理消息 ID</li>
+              <li>状态机（业务状态只能单向流转）</li>
+              <li>乐观锁 <code>WHERE version = ?</code></li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>CAP 理论和 BASE 理论分别是什么？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>CAP：</strong>分布式系统最多同时满足一致性（C）、可用性（A）、分区容错性（P）中的两个。分布式系统 P 不可避免，实际选择是 CP 或 AP。</p>
+            <p><strong>BASE：</strong>基本可用（BA）+ 软状态（S）+ 最终一致性（E），是 CAP 中 AP 方案的延伸，通过牺牲强一致性换取可用性。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>秒杀系统如何设计？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>分层防护：</strong></p>
+            <ol>
+              <li><strong>前端</strong>：按钮置灰、验证码、URL 动态化</li>
+              <li><strong>Nginx</strong>：限流、负载均衡</li>
+              <li><strong>网关</strong>：用户限流、黑名单</li>
+              <li><strong>Service</strong>：Redis 预减库存（DECR）→ 内存标记售罄 → 发送 MQ 异步下单</li>
+              <li><strong>数据库</strong>：乐观锁防超卖 <code>WHERE stock > 0</code></li>
+            </ol>
+            <p>核心思想：尽量把请求拦截在上游，真正到达数据库的请求极少。</p>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== 场景题 ===== -->
+      <section class="knowledge-section">
+        <h2>💡 场景与经验</h2>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>你做过的最有挑战的项目是什么？遇到过什么技术难点？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>回答这类问题建议使用 <strong>STAR 法则</strong>：</p>
+            <ul>
+              <li><strong>S（Situation）</strong>：项目的背景和目标</li>
+              <li><strong>T（Task）</strong>：你的职责和具体任务</li>
+              <li><strong>A（Action）</strong>：你采取的技术方案和行动</li>
+              <li><strong>R（Result）</strong>：最终效果和数据指标</li>
+            </ul>
+            <p>示例："负责 XX 系统的高并发改造（S），需要支撑日均百万级订单（T），通过引入 Redis 缓存 + MQ 异步 + 数据库分库分表（A），QPS 从 500 提升到 5000，P99 延迟从 2s 降到 200ms（R）。"</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>线上 CPU 飙高怎么排查？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <pre data-lang="bash"><span class="cm"># 1. 找到 CPU 高的 Java 进程</span>
+top -c
+<span class="cm"># 2. 找到该进程中 CPU 高的线程</span>
+top -Hp &lt;pid&gt;
+<span class="cm"># 3. 将线程 ID 转为 16 进制</span>
+printf <span class="str">"%x\n"</span> &lt;tid&gt;
+<span class="cm"># 4. 用 jstack 导出线程栈，搜索该线程</span>
+jstack &lt;pid&gt; | grep &lt;tid_hex&gt; -A 30</pre>
+            <p><strong>常见原因：</strong>死循环、频繁 Full GC、正则回溯、序列化/反序列化性能问题。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>线上 OOM 怎么排查？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ol>
+              <li>启动时加 <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof</code></li>
+              <li>用 MAT（Memory Analyzer Tool）或 VisualVM 分析 dump 文件</li>
+              <li>查看 Dominator Tree 找到占用内存最大的对象</li>
+              <li>分析 GC Roots 引用链，定位泄漏代码</li>
+            </ol>
+            <p><strong>常见原因：</strong>大集合未清理、ThreadLocal 未 remove、数据库连接未关闭、缓存无限增长。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>如何设计一个接口限流方案？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>常见限流算法：</strong></p>
+            <ul>
+              <li><strong>固定窗口计数器</strong>：简单但有边界突发问题</li>
+              <li><strong>滑动窗口计数器</strong>：更平滑，Sentinel 使用此算法</li>
+              <li><strong>漏桶算法</strong>：恒定速率处理，削峰填谷</li>
+              <li><strong>令牌桶算法</strong>：允许一定程度的突发流量（Guava RateLimiter）</li>
+            </ul>
+            <p><strong>实现方案：</strong>Guava RateLimiter（单机）、Redis + Lua（分布式）、Sentinel（生产推荐，支持集群限流）。</p>
+          </div></div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+      </footer>
+    </div>
+  </main>
+  <script src="../js/main.js"></script>
+</body>
+</html>
