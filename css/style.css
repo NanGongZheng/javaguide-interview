@@ -801,3 +801,37 @@ tr:hover td { background: var(--bg-hover); }
     gap: 16px;
   }
 }
+
+/* ===== TOC Sub-items ===== */
+.toc-list li {
+  margin-bottom: 4px;
+}
+
+.toc-sub {
+  list-style: none;
+  padding-left: 16px;
+  margin-top: 4px;
+}
+
+.toc-sub li {
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border);
+  margin-bottom: 2px;
+  transition: all var(--transition);
+}
+
+.toc-sub li:hover {
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+
+.toc-sub a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.toc-sub a:hover {
+  color: var(--accent);
+}

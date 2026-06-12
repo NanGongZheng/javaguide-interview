@@ -45,12 +45,59 @@
       <div class="toc">
         <h4>📑 目录</h4>
         <ul class="toc-list">
-          <li><a href="#mysql-index">MySQL 索引</a></li>
-          <li><a href="#mysql-transaction">MySQL 事务</a></li>
-          <li><a href="#mysql-optimize">查询优化</a></li>
-          <li><a href="#redis">Redis 基础</a></li>
-          <li><a href="#redis-ha">Redis 高可用</a></li>
-          <li><a href="#redis-spring">Spring 整合 Redis</a></li>
+          
+          <li>
+            <a href="#mysql-index">🔍 MySQL 索引</a>
+            <ul class="toc-sub">
+              <li><a href="#bplus-tree">B+ 树原理</a></li>
+              <li><a href="#cluster-index">聚簇 vs 非聚簇索引</a></li>
+              <li><a href="#composite-index">联合索引与最左前缀</a></li>
+              <li><a href="#index-fail">索引失效场景</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#mysql-transaction">🔒 MySQL 事务</a>
+            <ul class="toc-sub">
+              <li><a href="#acid">ACID 特性</a></li>
+              <li><a href="#isolation-level">隔离级别</a></li>
+              <li><a href="#mvcc">MVCC 原理</a></li>
+              <li><a href="#innodb-lock">InnoDB 锁机制</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#mysql-optimize">⚡ 查询优化</a>
+            <ul class="toc-sub">
+              <li><a href="#explain">EXPLAIN 分析</a></li>
+              <li><a href="#slow-query">慢查询优化</a></li>
+              <li><a href="#sharding">分库分表</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#redis">🔴 Redis 基础</a>
+            <ul class="toc-sub">
+              <li><a href="#redis-types">五种数据类型</a></li>
+              <li><a href="#skiplist">跳表原理</a></li>
+              <li><a href="#cache-problems">缓存三大问题</a></li>
+              <li><a href="#cache-consistency">缓存与 DB 一致性</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#redis-ha">🛡️ Redis 高可用</a>
+            <ul class="toc-sub">
+              <li><a href="#redis-persistence">持久化</a></li>
+              <li><a href="#redis-replication">主从复制</a></li>
+              <li><a href="#redis-sentinel">Sentinel 哨兵</a></li>
+              <li><a href="#redis-cluster">Redis Cluster</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#redis-spring">🔗 Spring 整合 Redis</a>
+            <ul class="toc-sub">
+              <li><a href="#cache-annotation">常用缓存注解</a></li>
+              <li><a href="#redis-dist-lock">分布式锁实现</a></li>
+            </ul>
+          </li>
+        
         </ul>
       </div>
 
@@ -58,7 +105,7 @@
       <section class="knowledge-section" id="mysql-index">
         <h2>🔍 MySQL 索引</h2>
 
-        <h3>B+ 树原理</h3>
+        <h3 id="bplus-tree">B+ 树原理</h3>
         <p>InnoDB 使用 B+ 树作为索引结构，理解 B+ 树是理解索引优化的基础：</p>
         <ul>
           <li><strong>非叶子节点</strong>只存 key（索引值），不存 data，因此单个节点能存更多 key，树更矮</li>
@@ -66,7 +113,7 @@
           <li><strong>树高通常 2-4 层</strong>：千万级数据只需 2-3 次磁盘 IO</li>
         </ul>
 
-        <h3>聚簇索引 vs 非聚簇索引</h3>
+        <h3 id="cluster-index">聚簇索引 vs 非聚簇索引</h3>
         <table>
           <tr><th>类型</th><th>说明</th><th>特点</th></tr>
           <tr><td>聚簇索引（主键索引）</td><td>叶子节点存完整行数据</td><td>一张表只有一个，主键即数据</td></tr>
@@ -82,7 +129,7 @@
 <span class="kw">SELECT</span> name, age, email <span class="kw">FROM</span> user <span class="kw">WHERE</span> name = <span class="str">'张三'</span>;
 <span class="cm">-- ❌ email 不在索引中，需要回表</span></pre>
 
-        <h3>联合索引与最左前缀原则</h3>
+        <h3 id="composite-index">联合索引与最左前缀原则</h3>
         <p>联合索引 <code>(a, b, c)</code> 相当于创建了 <code>(a)</code>、<code>(a, b)</code>、<code>(a, b, c)</code> 三个索引。</p>
         <pre data-lang="sql"><span class="cm">-- 索引 (a, b, c)</span>
 <span class="kw">WHERE</span> a = 1 <span class="kw">AND</span> b = 2 <span class="kw">AND</span> c = 3  <span class="cm">-- ✅ 全部命中</span>
@@ -91,7 +138,7 @@
 <span class="kw">WHERE</span> b = 2 <span class="kw">AND</span> c = 3             <span class="cm">-- ❌ 跳过 a，索引失效</span>
 <span class="kw">WHERE</span> a = 1 <span class="kw">AND</span> c = 3             <span class="cm">-- ⚠️ 只命中 a，c 无法使用索引</span></pre>
 
-        <h3>索引失效的常见场景</h3>
+        <h3 id="index-fail">索引失效的常见场景</h3>
         <ol>
           <li><strong>对索引列使用函数或运算</strong>：<code>WHERE YEAR(create_time) = 2024</code></li>
           <li><strong>隐式类型转换</strong>：<code>WHERE phone = 13800000000</code>（phone 是 varchar）</li>
@@ -106,7 +153,7 @@
       <section class="knowledge-section" id="mysql-transaction">
         <h2>🔒 MySQL 事务</h2>
 
-        <h3>ACID 特性</h3>
+        <h3 id="acid">ACID 特性</h3>
         <ul>
           <li><strong>原子性（Atomicity）</strong>：undo log 实现回滚</li>
           <li><strong>一致性（Consistency）</strong>：事务前后数据完整性不变</li>
@@ -114,7 +161,7 @@
           <li><strong>持久性（Durability）</strong>：redo log 实现崩溃恢复</li>
         </ul>
 
-        <h3>隔离级别</h3>
+        <h3 id="isolation-level">隔离级别</h3>
         <table>
           <tr><th>隔离级别</th><th>脏读</th><th>不可重复读</th><th>幻读</th></tr>
           <tr><td>READ UNCOMMITTED</td><td>✅</td><td>✅</td><td>✅</td></tr>
@@ -123,7 +170,7 @@
           <tr><td>SERIALIZABLE</td><td>❌</td><td>❌</td><td>❌</td></tr>
         </table>
 
-        <h3>MVCC 原理（高频）</h3>
+        <h3 id="mvcc">MVCC 原理（高频）</h3>
         <p>MVCC（多版本并发控制）通过 Read View 和 undo log 版本链实现无锁读：</p>
         <ul>
           <li><strong>隐藏字段</strong>：每行数据有 <code>DB_TRX_ID</code>（最后修改的事务ID）和 <code>DB_ROLL_PTR</code>（回滚指针，指向 undo log）</li>
@@ -137,7 +184,7 @@
           <li><strong>REPEATABLE READ</strong>：只在事务第一次 SELECT 时创建 Read View，之后复用</li>
         </ul>
 
-        <h3>InnoDB 锁机制</h3>
+        <h3 id="innodb-lock">InnoDB 锁机制</h3>
         <table>
           <tr><th>锁类型</th><th>粒度</th><th>说明</th></tr>
           <tr><td>共享锁（S Lock）</td><td>行级</td><td>读锁，多个事务可共享</td></tr>
@@ -152,7 +199,7 @@
       <section class="knowledge-section" id="mysql-optimize">
         <h2>⚡ 查询优化</h2>
 
-        <h3>EXPLAIN 分析</h3>
+        <h3 id="explain">EXPLAIN 分析</h3>
         <pre data-lang="sql"><span class="kw">EXPLAIN SELECT</span> * <span class="kw">FROM</span> user <span class="kw">WHERE</span> name = <span class="str">'张三'</span>;</pre>
         <table>
           <tr><th>字段</th><th>关注点</th></tr>
@@ -162,7 +209,7 @@
           <tr><td>Extra</td><td>Using index(覆盖索引)、Using filesort(文件排序)、Using temporary(临时表)</td></tr>
         </table>
 
-        <h3>慢查询优化思路</h3>
+        <h3 id="slow-query">慢查询优化思路</h3>
         <ol>
           <li>开启慢查询日志定位问题 SQL</li>
           <li>EXPLAIN 分析执行计划</li>
@@ -177,7 +224,7 @@
           </li>
         </ol>
 
-        <h3>分库分表</h3>
+        <h3 id="sharding">分库分表</h3>
         <p>当单表数据量超过千万级别时考虑分表：</p>
         <ul>
           <li><strong>垂直分库</strong>：按业务拆分（用户库、订单库、商品库）</li>
@@ -191,7 +238,7 @@
       <section class="knowledge-section" id="redis">
         <h2>🔴 Redis 基础</h2>
 
-        <h3>五种基础数据类型</h3>
+        <h3 id="redis-types">五种基础数据类型</h3>
         <table>
           <tr><th>类型</th><th>底层编码</th><th>典型场景</th></tr>
           <tr><td>String</td><td>int / embstr / raw</td><td>缓存、计数器、分布式锁</td></tr>
@@ -201,7 +248,7 @@
           <tr><td>ZSet</td><td>ziplist / skiplist + hashtable</td><td>排行榜、延迟队列</td></tr>
         </table>
 
-        <h3>跳表（SkipList）原理</h3>
+        <h3 id="skiplist">跳表（SkipList）原理</h3>
         <p>ZSet 底层使用跳表（而非红黑树），原因是：</p>
         <ul>
           <li>跳表实现简单，范围查询高效（直接遍历底层链表）</li>
@@ -209,7 +256,7 @@
           <li>跳表的查找时间复杂度 O(log n)，与平衡树相当</li>
         </ul>
 
-        <h3>缓存三大问题</h3>
+        <h3 id="cache-problems">缓存三大问题</h3>
 
         <h4>缓存穿透</h4>
         <p>查询不存在的数据，缓存和数据库都查不到，每次都打到数据库。</p>
@@ -233,7 +280,7 @@
           <li><strong>限流降级</strong>：对数据库请求限流</li>
         </ul>
 
-        <h3>缓存与数据库一致性</h3>
+        <h3 id="cache-consistency">缓存与数据库一致性</h3>
         <p>推荐方案：<strong>Cache Aside Pattern</strong></p>
         <ol>
           <li><strong>读</strong>：先读缓存，miss 则读数据库并写入缓存</li>
@@ -250,7 +297,7 @@
       <section class="knowledge-section" id="redis-ha">
         <h2>🛡️ Redis 高可用</h2>
 
-        <h3>持久化</h3>
+        <h3 id="redis-persistence">持久化</h3>
         <table>
           <tr><th>方式</th><th>原理</th><th>优缺点</th></tr>
           <tr><td>RDB（快照）</td><td>fork 子进程，将内存数据序列化到 dump.rdb</td><td>恢复快，但可能丢失最后一次快照后的数据</td></tr>
@@ -258,13 +305,13 @@
           <tr><td>混合持久化</td><td>RDB + 增量 AOF</td><td>Redis 4.0+ 推荐，兼顾恢复速度和数据安全</td></tr>
         </table>
 
-        <h3>主从复制</h3>
+        <h3 id="redis-replication">主从复制</h3>
         <ul>
           <li>全量同步：首次连接，Master 生成 RDB 发送给 Slave</li>
           <li>增量同步：断线重连后，基于 repl_backlog 做增量同步</li>
         </ul>
 
-        <h3>Sentinel 哨兵</h3>
+        <h3 id="redis-sentinel">Sentinel 哨兵</h3>
         <p>自动监控和故障转移：</p>
         <ol>
           <li>每个 Sentinel 每秒向 Master 发送 PING，主观下线（SDOWN）</li>
@@ -272,7 +319,7 @@
           <li>Sentinel 选举 Leader，由 Leader 执行故障转移（选新 Master）</li>
         </ol>
 
-        <h3>Redis Cluster</h3>
+        <h3 id="redis-cluster">Redis Cluster</h3>
         <ul>
           <li><strong>数据分片</strong>：16384 个 slot，CRC16(key) % 16384 定位 slot</li>
           <li><strong>去中心化</strong>：每个节点都能处理请求，不在自己 slot 范围则 MOVED 重定向</li>
@@ -285,7 +332,7 @@
       <section class="knowledge-section" id="redis-spring">
         <h2>🔗 Spring 整合 Redis</h2>
 
-        <h3>常用注解</h3>
+        <h3 id="cache-annotation">常用注解</h3>
         <pre data-lang="java"><span class="ann">@Cacheable</span>(value = <span class="str">"user"</span>, key = <span class="str">"#id"</span>)
 <span class="kw">public</span> User getUserById(Long id) {
     <span class="kw">return</span> userMapper.selectById(id);
@@ -302,7 +349,7 @@
     userMapper.deleteById(id);
 }</pre>
 
-        <h3>分布式锁实现</h3>
+        <h3 id="redis-dist-lock">分布式锁实现</h3>
         <pre data-lang="java"><span class="cm">// Redisson 分布式锁（推荐）</span>
 <span class="ann">@Resource</span>
 <span class="kw">private</span> RedissonClient redissonClient;

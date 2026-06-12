@@ -45,12 +45,60 @@
       <div class="toc">
         <h4>📑 目录</h4>
         <ul class="toc-list">
-          <li><a href="#distributed-theory">分布式理论</a></li>
-          <li><a href="#distributed-lock">分布式锁</a></li>
-          <li><a href="#distributed-transaction">分布式事务</a></li>
-          <li><a href="#mq">消息队列</a></li>
-          <li><a href="#system-design">经典系统设计</a></li>
-          <li><a href="#design-patterns">设计模式</a></li>
+          
+          <li>
+            <a href="#distributed-theory">📐 分布式理论</a>
+            <ul class="toc-sub">
+              <li><a href="#cap">CAP 定理</a></li>
+              <li><a href="#base">BASE 理论</a></li>
+              <li><a href="#distributed-id">分布式 ID 方案</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#distributed-lock">🔐 分布式锁</a>
+            <ul class="toc-sub">
+              <li><a href="#lock-compare">三种方案对比</a></li>
+              <li><a href="#redis-lock">Redis 分布式锁</a></li>
+              <li><a href="#redlock">RedLock 算法</a></li>
+              <li><a href="#redisson-watchdog">Redisson 看门狗</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#distributed-transaction">🔄 分布式事务</a>
+            <ul class="toc-sub">
+              <li><a href="#tx-compare">方案对比</a></li>
+              <li><a href="#seata-modes">Seata 四种模式</a></li>
+              <li><a href="#local-msg-table">本地消息表</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#mq">📨 消息队列</a>
+            <ul class="toc-sub">
+              <li><a href="#mq-compare">MQ 选型对比</a></li>
+              <li><a href="#mq-lose">消息丢失问题</a></li>
+              <li><a href="#mq-idempotent">幂等性</a></li>
+              <li><a href="#mq-order">消息顺序性</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#system-design">🎯 经典系统设计</a>
+            <ul class="toc-sub">
+              <li><a href="#seckill">秒杀系统</a></li>
+              <li><a href="#short-url">短链接系统</a></li>
+              <li><a href="#idempotent-design">接口幂等设计</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#design-patterns">🧩 设计模式</a>
+            <ul class="toc-sub">
+              <li><a href="#singleton">单例模式</a></li>
+              <li><a href="#strategy">策略模式</a></li>
+              <li><a href="#template-method">模板方法</a></li>
+              <li><a href="#observer">观察者模式</a></li>
+              <li><a href="#solid">SOLID 原则</a></li>
+            </ul>
+          </li>
+        
         </ul>
       </div>
 
@@ -58,7 +106,7 @@
       <section class="knowledge-section" id="distributed-theory">
         <h2>📐 分布式理论</h2>
 
-        <h3>CAP 定理</h3>
+        <h3 id="cap">CAP 定理</h3>
         <p>分布式系统中，以下三者最多只能同时满足两个：</p>
         <ul>
           <li><strong>C（Consistency）一致性</strong>：所有节点看到相同数据</li>
@@ -71,7 +119,7 @@
           <li><strong>AP 系统</strong>：Eureka、Nacos（临时实例）、Cassandra — 牺牲一致性保可用性</li>
         </ul>
 
-        <h3>BASE 理论</h3>
+        <h3 id="base">BASE 理论</h3>
         <p>对 CAP 中 AP 方案的延伸：</p>
         <ul>
           <li><strong>Basically Available</strong>：基本可用，允许响应时间和功能上的损失</li>
@@ -79,7 +127,7 @@
           <li><strong>Eventually Consistent</strong>：最终一致性，经过一段时间后数据达到一致</li>
         </ul>
 
-        <h3>分布式 ID 生成方案</h3>
+        <h3 id="distributed-id">分布式 ID 生成方案</h3>
         <table>
           <tr><th>方案</th><th>优点</th><th>缺点</th></tr>
           <tr><td>UUID</td><td>简单，无网络开销</td><td>无序，索引性能差，长度 36 位</td></tr>
@@ -99,7 +147,7 @@
       <section class="knowledge-section" id="distributed-lock">
         <h2>🔐 分布式锁</h2>
 
-        <h3>三种实现方案对比</h3>
+        <h3 id="lock-compare">三种实现方案对比</h3>
         <table>
           <tr><th>方案</th><th>实现</th><th>优点</th><th>缺点</th></tr>
           <tr><td>Redis</td><td>SET NX EX / Redisson</td><td>性能高，生态好</td><td>主从切换可能丢锁</td></tr>
@@ -107,7 +155,7 @@
           <tr><td>数据库</td><td>唯一索引 / for update</td><td>简单，无额外依赖</td><td>性能差，死锁风险</td></tr>
         </table>
 
-        <h3>Redis 分布式锁核心问题</h3>
+        <h3 id="redis-lock">Redis 分布式锁核心问题</h3>
         <h4>基本实现</h4>
         <pre data-lang="bash"><span class="cm"># 加锁：原子操作 SET key value NX EX seconds</span>
 SET lock:order:1001 requestId NX EX 30
@@ -119,7 +167,7 @@ SET lock:order:1001 requestId NX EX 30
     <span class="kw">return</span> 0
 <span class="kw">end</span></pre>
 
-        <h4>RedLock 算法</h4>
+        <h4 id="redlock">RedLock 算法</h4>
         <p>为了解决 Redis 主从切换丢锁问题，Redis 作者提出了 RedLock：</p>
         <ol>
           <li>向 N 个独立的 Redis 节点（推荐 5 个）请求加锁</li>
@@ -132,7 +180,7 @@ SET lock:order:1001 requestId NX EX 30
           Martin Kleppmann 指出 RedLock 在 GC 停顿、时钟跳跃等场景下不安全。实际生产中推荐使用 Redisson（看门狗自动续期）或 ZooKeeper。
         </div>
 
-        <h3>Redisson 看门狗机制</h3>
+        <h3 id="redisson-watchdog">Redisson 看门狗机制</h3>
         <ul>
           <li>默认锁超时时间 30 秒</li>
           <li>后台线程每 10 秒（锁时间/3）检查锁是否还被持有</li>
@@ -145,7 +193,7 @@ SET lock:order:1001 requestId NX EX 30
       <section class="knowledge-section" id="distributed-transaction">
         <h2>🔄 分布式事务</h2>
 
-        <h3>方案对比</h3>
+        <h3 id="tx-compare">方案对比</h3>
         <table>
           <tr><th>方案</th><th>一致性</th><th>性能</th><th>复杂度</th></tr>
           <tr><td>2PC（XA）</td><td>强一致</td><td>低（阻塞）</td><td>低</td></tr>
@@ -155,7 +203,7 @@ SET lock:order:1001 requestId NX EX 30
           <tr><td>Seata AT 模式</td><td>最终一致</td><td>较高</td><td>低</td></tr>
         </table>
 
-        <h3>Seata 四种模式</h3>
+        <h3 id="seata-modes">Seata 四种模式</h3>
         <ul>
           <li><strong>AT 模式</strong>（推荐）：自动补偿，通过 undo_log 实现回滚，对业务无侵入</li>
           <li><strong>TCC 模式</strong>：手动编写 Try/Confirm/Cancel，灵活但侵入性大</li>
@@ -163,7 +211,7 @@ SET lock:order:1001 requestId NX EX 30
           <li><strong>XA 模式</strong>：基于数据库 XA 协议，强一致性但性能差</li>
         </ul>
 
-        <h3>本地消息表方案</h3>
+        <h3 id="local-msg-table">本地消息表方案</h3>
         <ol>
           <li>业务操作和写消息表在同一个本地事务中</li>
           <li>定时任务扫描消息表，发送到 MQ</li>
@@ -176,7 +224,7 @@ SET lock:order:1001 requestId NX EX 30
       <section class="knowledge-section" id="mq">
         <h2>📨 消息队列</h2>
 
-        <h3>MQ 选型对比</h3>
+        <h3 id="mq-compare">MQ 选型对比</h3>
         <table>
           <tr><th>特性</th><th>RabbitMQ</th><th>Kafka</th><th>RocketMQ</th></tr>
           <tr><td>开发语言</td><td>Erlang</td><td>Scala/Java</td><td>Java</td></tr>
@@ -189,7 +237,7 @@ SET lock:order:1001 requestId NX EX 30
           <tr><td>适用场景</td><td>中小规模，路由灵活</td><td>大数据，日志收集</td><td>电商，金融，事务消息</td></tr>
         </table>
 
-        <h3>消息丢失问题</h3>
+        <h3 id="mq-lose">消息丢失问题</h3>
         <p>三个环节都可能丢消息，需要分别处理：</p>
         <ol>
           <li><strong>生产者 → MQ</strong>：开启确认机制（RabbitMQ confirm / Kafka acks=all）</li>
@@ -197,7 +245,7 @@ SET lock:order:1001 requestId NX EX 30
           <li><strong>MQ → 消费者</strong>：手动 ACK，消费成功后再确认</li>
         </ol>
 
-        <h3>消息重复消费（幂等性）</h3>
+        <h3 id="mq-idempotent">消息重复消费（幂等性）</h3>
         <p>MQ 不能保证 exactly-once，只能做到 at-least-once，因此消费端需要做幂等：</p>
         <ul>
           <li><strong>数据库唯一索引</strong>：同一消息不会插入两次</li>
@@ -206,7 +254,7 @@ SET lock:order:1001 requestId NX EX 30
           <li><strong>乐观锁</strong>：<code>UPDATE SET status = 'paid' WHERE id = ? AND status = 'unpaid'</code></li>
         </ul>
 
-        <h3>消息顺序性</h3>
+        <h3 id="mq-order">消息顺序性</h3>
         <p>全局有序性能太差，一般保证<strong>分区有序</strong>：</p>
         <ul>
           <li>同一业务 key（如订单 ID）的消息发到同一个分区/Queue</li>
@@ -223,7 +271,7 @@ SET lock:order:1001 requestId NX EX 30
       <section class="knowledge-section" id="system-design">
         <h2>🎯 经典系统设计</h2>
 
-        <h3>秒杀系统设计</h3>
+        <h3 id="seckill">秒杀系统设计</h3>
         <p>核心挑战：瞬时高并发、超卖问题、恶意刷单。</p>
 
         <h4>整体架构</h4>
@@ -265,7 +313,7 @@ SET lock:order:1001 requestId NX EX 30
     <span class="kw">return</span> Result.ok(<span class="str">"排队中，请稍候"</span>);
 }</pre>
 
-        <h3>短链接系统设计</h3>
+        <h3 id="short-url">短链接系统设计</h3>
         <ul>
           <li><strong>生成方案</strong>：分布式 ID → Base62 编码 → 6-8 位短码</li>
           <li><strong>存储</strong>：MySQL 存长短映射 + Redis 缓存热点短链</li>
@@ -273,7 +321,7 @@ SET lock:order:1001 requestId NX EX 30
           <li><strong>防重复</strong>：对原始 URL 做 MD5 取前 N 位查询是否已存在</li>
         </ul>
 
-        <h3>接口幂等设计</h3>
+        <h3 id="idempotent-design">接口幂等设计</h3>
         <p>保证同一个请求执行多次与执行一次效果相同：</p>
         <ol>
           <li><strong>Token 机制</strong>：请求前获取 Token，提交时携带 Token 并删除（一次性）</li>
@@ -287,7 +335,7 @@ SET lock:order:1001 requestId NX EX 30
       <section class="knowledge-section" id="design-patterns">
         <h2>🧩 设计模式</h2>
 
-        <h3>面试常考的设计模式</h3>
+        <h3 id="singleton">面试常考的设计模式</h3>
 
         <h4>单例模式</h4>
         <pre data-lang="java"><span class="cm">// 推荐：枚举单例（天然防反射和序列化攻击）</span>
@@ -310,7 +358,7 @@ SET lock:order:1001 requestId NX EX 30
     }
 }</pre>
 
-        <h4>策略模式</h4>
+        <h4 id="strategy">策略模式</h4>
         <pre data-lang="java"><span class="cm">// 消除 if-else，Spring 中常用</span>
 <span class="ann">@Component</span>
 <span class="kw">public class</span> <span class="type">PayStrategyFactory</span> {
@@ -329,7 +377,7 @@ SET lock:order:1001 requestId NX EX 30
 <span class="ann">@Service</span>(<span class="str">"wechat"</span>)
 <span class="kw">public class</span> <span class="type">WechatPayStrategy</span> <span class="kw">implements</span> PayStrategy { <span class="cm">/* ... */</span> }</pre>
 
-        <h4>模板方法模式</h4>
+        <h4 id="template-method">模板方法模式</h4>
         <pre data-lang="java"><span class="cm">// 定义算法骨架，子类实现具体步骤</span>
 <span class="kw">public abstract class</span> <span class="type">AbstractExportService</span> {
     <span class="kw">public final void</span> export() {
@@ -342,7 +390,7 @@ SET lock:order:1001 requestId NX EX 30
     <span class="kw">protected abstract void</span> process(List&lt;Data&gt; data);
 }</pre>
 
-        <h4>观察者模式</h4>
+        <h4 id="observer">观察者模式</h4>
         <p>Spring 事件机制就是典型的观察者模式：</p>
         <pre data-lang="java"><span class="cm">// 定义事件</span>
 <span class="kw">public class</span> <span class="type">OrderCreatedEvent</span> <span class="kw">extends</span> ApplicationEvent {
@@ -362,7 +410,7 @@ SET lock:order:1001 requestId NX EX 30
     }
 }</pre>
 
-        <h3>SOLID 原则</h3>
+        <h3 id="solid">SOLID 原则</h3>
         <ul>
           <li><strong>S（单一职责）</strong>：一个类只负责一件事</li>
           <li><strong>O（开闭原则）</strong>：对扩展开放，对修改关闭</li>
