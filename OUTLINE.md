@@ -73,11 +73,43 @@
   - [x] 请求处理流程（DispatcherServlet → HandlerMapping → HandlerAdapter）
   - [x] 常用注解表
   - [x] 全局异常处理实战代码
-- [x] **Spring Cloud**
-  - [x] 微服务核心组件对比（Netflix vs Alibaba）
-  - [x] Nacos 注册中心原理（注册、心跳、发现、AP/CP）
-  - [x] Gateway 网关配置示例
-  - [x] Sentinel 熔断降级策略
+- [x] **Spring Cloud 总览** — 新旧技术栈全景对比表（Netflix / Alibaba / 官方 2022+）
+- [x] **版本演进与选型** — 版本命名变革、Boot 3.x 重大变化、GraalVM/Virtual Thread 支持
+- [x] **注册中心**
+  - [x] 5 大注册中心横向对比（Eureka / Nacos / Consul / etcd / ZooKeeper）
+  - [x] Nacos 2.x 深度解析（gRPC 架构、服务发现流程、AP/CP 模式）
+  - [x] Nacos 面试高频问题（实时性保证、vs Eureka 区别）
+- [x] **配置中心**
+  - [x] 4 大配置中心对比（Config / Nacos / Apollo / Consul KV）
+  - [x] Nacos 配置管理实战（共享配置、扩展配置、@RefreshScope 动态刷新）
+- [x] **API 网关**
+  - [x] 网关技术对比（Zuul 1.x / Gateway / Zuul 2.x / APISIX）
+  - [x] Spring Cloud Gateway 核心概念（Route / Predicate / Filter）
+  - [x] 完整配置示例（路由、限流、熔断、跨域、动态路由）
+  - [x] 自定义全局鉴权过滤器代码
+- [x] **负载均衡**
+  - [x] Ribbon vs Spring Cloud LoadBalancer 对比与迁移指南
+  - [x] 负载策略详解（轮询、随机、权重、响应时间、最小并发）
+- [x] **服务调用**
+  - [x] 4 种方案对比（RestTemplate / OpenFeign / gRPC / RestClient）
+  - [x] OpenFeign 完整实战（声明式接口、降级工厂、使用示例）
+  - [x] Spring Cloud RestClient 新特性（Fluent API）
+- [x] **熔断与限流**
+  - [x] Hystrix vs Sentinel vs Resilience4j 三方对比
+  - [x] Sentinel 工作流程（Slot Chain）、注解实战、Nacos 动态规则推送
+  - [x] Resilience4j 核心用法（断路器 + 限流 + 重试组合）
+- [x] **分布式事务 Seata**
+  - [x] AT / TCC / SAGA / XA 四种模式对比
+  - [x] AT 模式两阶段原理详解（undo_log、全局锁）
+  - [x] @GlobalTransactional 实战配置
+- [x] **可观测性**
+  - [x] Sleuth → Micrometer Tracing 演进
+  - [x] Micrometer Tracing + OpenTelemetry 配置
+  - [x] SkyWalking 国产 APM 方案
+- [x] **Service Mesh**
+  - [x] Spring Cloud vs Service Mesh 架构对比
+  - [x] Istio 核心架构（Control Plane + Envoy Sidecar）
+  - [x] Istio 核心功能（流量管理、安全、可观测、弹性）
 - [x] **事务管理**
   - [x] 7 种事务传播行为
   - [x] 事务失效的 8 种场景（含代码示例）

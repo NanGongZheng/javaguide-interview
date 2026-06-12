@@ -49,7 +49,17 @@
           <li><a href="#spring-aop">AOP 面向切面</a></li>
           <li><a href="#spring-boot">Spring Boot</a></li>
           <li><a href="#spring-mvc">Spring MVC</a></li>
-          <li><a href="#spring-cloud">Spring Cloud</a></li>
+          <li><a href="#spring-cloud">Spring Cloud 总览</a></li>
+          <li><a href="#cloud-version">版本演进与选型</a></li>
+          <li><a href="#cloud-register">注册中心</a></li>
+          <li><a href="#cloud-config">配置中心</a></li>
+          <li><a href="#cloud-gateway">API 网关</a></li>
+          <li><a href="#cloud-lb">负载均衡</a></li>
+          <li><a href="#cloud-call">服务调用</a></li>
+          <li><a href="#cloud-circuit">熔断与限流</a></li>
+          <li><a href="#cloud-seata">分布式事务 Seata</a></li>
+          <li><a href="#cloud-observability">可观测性</a></li>
+          <li><a href="#cloud-mesh">Service Mesh</a></li>
           <li><a href="#transaction">事务管理</a></li>
         </ul>
       </div>
@@ -247,64 +257,735 @@
 }</pre>
       </section>
 
-      <!-- ==================== Spring Cloud ==================== -->
+            <!-- ==================== Spring Cloud ==================== -->
       <section class="knowledge-section" id="spring-cloud">
-        <h2>☁️ Spring Cloud</h2>
+        <h2>☁️ Spring Cloud 总览</h2>
+        <p>Spring Cloud 是微服务架构的一站式解决方案，提供了微服务开发所需的全套工具。经过多年演进，技术栈已经发生了巨大变化。</p>
 
-        <h3>微服务核心组件</h3>
+        <h3>新旧技术栈全景对比</h3>
         <table>
-          <tr><th>功能</th><th>Spring Cloud Netflix</th><th>Spring Cloud Alibaba</th></tr>
-          <tr><td>注册中心</td><td>Eureka（停更）</td><td>Nacos ✅</td></tr>
-          <tr><td>配置中心</td><td>Spring Cloud Config</td><td>Nacos ✅</td></tr>
-          <tr><td>网关</td><td>Zuul 1.x（阻塞式）</td><td>Spring Cloud Gateway ✅</td></tr>
-          <tr><td>负载均衡</td><td>Ribbon（维护模式）</td><td>Spring Cloud LoadBalancer ✅</td></tr>
-          <tr><td>服务调用</td><td>Feign</td><td>OpenFeign ✅</td></tr>
-          <tr><td>熔断降级</td><td>Hystrix（停更）</td><td>Sentinel ✅</td></tr>
-          <tr><td>分布式事务</td><td>—</td><td>Seata ✅</td></tr>
-          <tr><td>消息队列</td><td>—</td><td>RocketMQ ✅</td></tr>
+          <tr><th>功能</th><th>Netflix（旧·已停更）</th><th>Spring Cloud Alibaba（主流）</th><th>Spring Cloud 2022+（官方）</th></tr>
+          <tr><td>注册中心</td><td>Eureka 2.x 停更</td><td>Nacos 2.x ✅</td><td>Consul / etcd</td></tr>
+          <tr><td>配置中心</td><td>Spring Cloud Config</td><td>Nacos ✅</td><td>Spring Cloud Config / Vault</td></tr>
+          <tr><td>API 网关</td><td>Zuul 1.x（阻塞式）</td><td>Spring Cloud Gateway ✅</td><td>Spring Cloud Gateway ✅</td></tr>
+          <tr><td>负载均衡</td><td>Ribbon（维护模式）</td><td>Spring Cloud LoadBalancer ✅</td><td>Spring Cloud LoadBalancer ✅</td></tr>
+          <tr><td>服务调用</td><td>Feign（Netflix 维护）</td><td>OpenFeign ✅</td><td>OpenFeign / RestClient ✅</td></tr>
+          <tr><td>熔断降级</td><td>Hystrix（停更）</td><td>Sentinel ✅</td><td>Resilience4j ✅</td></tr>
+          <tr><td>分布式事务</td><td>—</td><td>Seata ✅</td><td>—</td></tr>
+          <tr><td>消息驱动</td><td>—</td><td>RocketMQ ✅</td><td>Spring Cloud Stream ✅</td></tr>
+          <tr><td>链路追踪</td><td>Zipkin（Sleuth）</td><td>SkyWalking ✅</td><td>Micrometer Tracing ✅</td></tr>
+          <tr><td>限流</td><td>Turbine + Hystrix</td><td>Sentinel ✅</td><td>Resilience4j RateLimiter</td></tr>
         </table>
 
         <div class="info-box tip">
-          <strong>💡 面试建议</strong>
-          目前主流方案是 Spring Cloud Alibaba（Nacos + Sentinel + Seata + Gateway），面试时重点掌握这套体系。了解 Netflix 组件的历史背景即可。
+          <strong>💡 2024-2026 面试主流方案</strong>
+          国内面试重点：<strong>Spring Cloud Alibaba</strong>（Nacos + Sentinel + Seata + Gateway + RocketMQ）。
+          外企/国际化场景：<strong>Spring Cloud 官方</strong>（Consul + Resilience4j + Gateway + Micrometer）。
+          两者都需了解，面试时能对比说明是加分项。
+        </div>
+      </section>
+
+      <!-- ==================== 版本演进 ==================== -->
+      <section class="knowledge-section" id="cloud-version">
+        <h2>📦 版本演进与选型</h2>
+
+        <h3>Spring Cloud 版本命名变革</h3>
+        <table>
+          <tr><th>时期</th><th>命名方式</th><th>示例</th><th>对应 Spring Boot</th></tr>
+          <tr><td>2015-2019</td><td>字母顺序</td><td>Angel → Brixton → … → Hoxton</td><td>1.x ~ 2.x</td></tr>
+          <tr><td>2020+</td><td>年份 + 版本号</td><td>2020.0 (Ilford) → 2021.0 → 2022.0 → 2023.0 → 2024.0</td><td>2.4 ~ 3.x</td></tr>
+        </table>
+
+        <h3>版本对应关系（面试常问）</h3>
+        <table>
+          <tr><th>Spring Cloud</th><th>Spring Cloud Alibaba</th><th>Spring Boot</th><th>JDK</th></tr>
+          <tr><td>2022.0.x</td><td>2022.0.0.0</td><td>3.0.x</td><td>17+</td></tr>
+          <tr><td>2023.0.x</td><td>2023.0.0.0</td><td>3.2.x</td><td>17+</td></tr>
+          <tr><td>2024.0.x</td><td>2024.0.0.0</td><td>3.4.x</td><td>17+</td></tr>
+        </table>
+
+        <div class="info-box warning">
+          <strong>⚠️ Spring Boot 3.x 重大变化</strong>
+          ① 最低 JDK 17；② javax.* 全部迁移到 jakarta.*；③ 自动配置文件从 spring.factories 改为 AutoConfiguration.imports；④ Spring Cloud Netflix 全线移除，不再内置。
         </div>
 
-        <h3>Nacos 注册中心原理</h3>
+        <h3>Spring Cloud 2022+ 新特性</h3>
         <ul>
-          <li><strong>服务注册</strong>：服务启动时向 Nacos 发送注册请求（HTTP/gRPC），携带服务名、IP、端口、元数据</li>
-          <li><strong>心跳检测</strong>：客户端每 5 秒发送心跳，15 秒未收到心跳标记为不健康，30 秒剔除</li>
-          <li><strong>服务发现</strong>：客户端定时拉取服务列表（Pull 模式），同时 Nacos 主动推送变更（Push 模式）</li>
-          <li><strong>AP/CP 切换</strong>：临时实例用 Distro 协议（AP），持久实例用 Raft 协议（CP）</li>
-        </ul>
-
-        <h3>Gateway 网关</h3>
-        <pre data-lang="yaml"><span class="cm"># Gateway 路由配置示例</span>
-spring:
-  cloud:
-    gateway:
-      routes:
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/user/**
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20</pre>
-
-        <h3>Sentinel 熔断降级</h3>
-        <p>Sentinel 提供丰富的流控和熔断策略：</p>
-        <ul>
-          <li><strong>流控规则</strong>：QPS 限流、线程数限流、关联限流、链路限流</li>
-          <li><strong>熔断策略</strong>：慢调用比例、异常比例、异常数</li>
-          <li><strong>热点参数限流</strong>：针对特定参数值限流</li>
-          <li><strong>集群限流</strong>：多节点共享限流计数</li>
+          <li><strong>Spring Cloud LoadBalancer 成为默认</strong>：Ribbon 彻底移除，@LoadBalancerClient 替代 @RibbonClient</li>
+          <li><strong>Spring Cloud Function</strong>：函数式编程模型，支持 Serverless 部署（AWS Lambda、Azure Functions）</li>
+          <li><strong>GraalVM Native Image 支持</strong>：Spring Boot 3.x + Spring Cloud 支持 AOT 编译，启动时间从秒级降到毫秒级</li>
+          <li><strong>Virtual Threads 支持</strong>：Spring Boot 3.2+ 支持 JDK 21 虚拟线程，大幅提升并发能力</li>
+          <li><strong>Micrometer 取代 Actuator</strong>：统一可观测性（Metrics + Tracing + Logging）</li>
         </ul>
       </section>
 
-      <!-- ==================== 事务 ==================== -->
+      <!-- ==================== 注册中心 ==================== -->
+      <section class="knowledge-section" id="cloud-register">
+        <h2>📡 注册中心</h2>
+
+        <h3>注册中心横向对比</h3>
+        <table>
+          <tr><th>特性</th><th>Eureka</th><th>Nacos 2.x</th><th>Consul</th><th>etcd</th><th>ZooKeeper</th></tr>
+          <tr><td>开发语言</td><td>Java</td><td>Java</td><td>Go</td><td>Go</td><td>Java</td></tr>
+          <tr><td>CAP</td><td>AP</td><td>AP + CP 可切换</td><td>CP</td><td>CP</td><td>CP</td></tr>
+          <tr><td>健康检查</td><td>客户端心跳</td><td>客户端心跳 + 服务端探测</td><td>TTL / HTTP / TCP / gRPC</td><td>Lease TTL</td><td>会话心跳</td></tr>
+          <tr><td>配置中心</td><td>❌</td><td>✅ 内置</td><td>✅ KV 存储</td><td>✅ KV 存储</td><td>❌</td></tr>
+          <tr><td>雪崩保护</td><td>✅ 自我保护</td><td>✅ 临时实例</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>管理界面</td><td>简单</td><td>✅ 功能丰富</td><td>✅ 内置 UI</td><td>❌（第三方）</td><td>❌（第三方）</td></tr>
+          <tr><td>多数据中心</td><td>❌</td><td>✅</td><td>✅ 原生支持</td><td>❌</td><td>❌</td></tr>
+          <tr><td>维护状态</td><td>❌ Netflix 停更</td><td>✅ 活跃（阿里）</td><td>✅ 活跃（HashiCorp）</td><td>✅ 活跃（CNCF）</td><td>⚠️ 维护模式</td></tr>
+          <tr><td>适用场景</td><td>遗留项目</td><td>国内微服务首选</td><td>多语言/云原生</td><td>K8s 生态</td><td>遗留项目</td></tr>
+        </table>
+
+        <h3>Nacos 2.x 深度解析（重点）</h3>
+        <h4>架构升级：HTTP → gRPC</h4>
+        <p>Nacos 2.x 引入 gRPC 通信，解决 1.x 的性能瓶颈：</p>
+        <ul>
+          <li><strong>连接层</strong>：gRPC 长连接替代 HTTP 短连接，减少连接开销</li>
+          <li><strong>服务注册</strong>：gRPC 双向流，注册请求秒级生效（1.x 有延迟）</li>
+          <li><strong>配置推送</strong>：gRPC Server Push 替代 HTTP 长轮询，推送延迟从秒级降到毫秒级</li>
+          <li><strong>协议兼容</strong>：2.x 兼容 1.x 的 OpenAPI，平滑升级</li>
+        </ul>
+
+        <h4>服务注册与发现流程</h4>
+        <pre data-lang="text"><span class="cm">服务注册流程：</span>
+┌──────────┐    gRPC     ┌──────────┐    Distro/Raft    ┌──────────┐
+│ Service A │ ──────────→ │  Nacos   │ ←───────────────→ │  Nacos   │
+│ (Client)  │ ←────────── │ Node 1   │                   │ Node 2   │
+└──────────┘  推送变更    └──────────┘     数据同步       └──────────┘
+                    │
+                    ▼
+              ┌──────────┐
+              │ Service B │  拉取服务列表（Pull + Push）
+              │ (Client)  │
+              └──────────┘</pre>
+
+        <h4>AP/CP 模式选择</h4>
+        <ul>
+          <li><strong>临时实例（AP·Distro 协议）</strong>：默认模式，客户端心跳保活，不健康自动剔除。适合大多数场景</li>
+          <li><strong>持久实例（CP·Raft 协议）</strong>：服务端主动探测，需要手动注册/注销。适合数据库、中间件等基础设施</li>
+        </ul>
+
+        <pre data-lang="yaml"><span class="cm"># Nacos 客户端配置</span>
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: dev                    <span class="cm"># 环境隔离</span>
+        group: DEFAULT_GROUP              <span class="cm"># 服务分组</span>
+        cluster-name: DEFAULT             <span class="cm"># 集群</span>
+        ephemeral: true                   <span class="cm"># true=临时实例(AP) false=持久实例(CP)</span>
+        weight: 1                         <span class="cm"># 权重（用于负载均衡）</span>
+        metadata:
+          version: v2                     <span class="cm"># 自定义元数据</span></pre>
+
+        <h4>Nacos 面试高频问题</h4>
+        <div class="qa-item">
+          <div class="qa-question"><span>Nacos 如何保证服务发现的实时性？</span><span class="arrow">▼</span></div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            Nacos 2.x 采用 <strong>Push + Pull</strong> 结合：① gRPC 长连接实现服务端主动推送（毫秒级）；② 客户端定时拉取作为兜底（默认 10 秒）；③ 服务端有变更时通过 UDP 推送通知客户端。三者结合保证实时性和可靠性。
+          </div></div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question"><span>Nacos 和 Eureka 的核心区别？</span><span class="arrow">▼</span></div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>CP/AP</strong>：Eureka 只支持 AP，Nacos 支持 AP + CP 切换</li>
+              <li><strong>配置中心</strong>：Nacos 内置配置中心，Eureka 需要配合 Spring Cloud Config</li>
+              <li><strong>通信协议</strong>：Nacos 2.x 用 gRPC，Eureka 用 HTTP</li>
+              <li><strong>健康检查</strong>：Nacos 支持服务端探测（TCP/HTTP），Eureka 只有客户端心跳</li>
+              <li><strong>维护状态</strong>：Eureka 2.x 已停止开发，Nacos 持续迭代</li>
+            </ul>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ==================== 配置中心 ==================== -->
+      <section class="knowledge-section" id="cloud-config">
+        <h2>⚙️ 配置中心</h2>
+
+        <h3>配置中心对比</h3>
+        <table>
+          <tr><th>特性</th><th>Spring Cloud Config</th><th>Nacos</th><th>Apollo</th><th>Consul KV</th></tr>
+          <tr><td>配置格式</td><td>Git 文件</td><td>Properties/YAML/JSON</td><td>Properties/YAML/JSON/XML</td><td>Key-Value</td></tr>
+          <tr><td>推送到客户端</td><td>需配合 Bus（MQ）</td><td>✅ gRPC 推送</td><td>✅ HTTP 长轮询 + 推送</td><td>Blocking Query</td></tr>
+          <tr><td>灰度发布</td><td>❌</td><td>✅ Beta 发布</td><td>✅ 灰度 + 回滚</td><td>❌</td></tr>
+          <tr><td>权限管理</td><td>❌（依赖 Git）</td><td>✅ 命名空间隔离</td><td>✅ 完善的权限体系</td><td>ACL</td></tr>
+          <tr><td>版本历史</td><td>✅ Git 天然支持</td><td>✅ 配置历史</td><td>✅ 版本对比 + 回滚</td><td>❌</td></tr>
+          <tr><td>多环境</td><td>Git 分支/Profile</td><td>Namespace + Group</td><td>Cluster + Namespace</td><td>Prefix 隔离</td></tr>
+          <tr><td>适用场景</td><td>简单场景</td><td>中小项目一站式</td><td>大型企业（携程开源）</td><td>云原生/多语言</td></tr>
+        </table>
+
+        <h3>Nacos 配置管理实战</h3>
+        <pre data-lang="yaml"><span class="cm"># bootstrap.yml - Nacos 配置中心</span>
+spring:
+  application:
+    name: user-service
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: dev
+        group: DEFAULT_GROUP
+        file-extension: yaml              <span class="cm"># 配置格式</span>
+        shared-configs:                   <span class="cm"># 共享配置（公共配置抽取）</span>
+          - data-id: common.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+        extension-configs:                <span class="cm"># 扩展配置</span>
+          - data-id: redis.yaml
+            group: DEFAULT_GROUP
+            refresh: true</pre>
+
+        <pre data-lang="java"><span class="cm">// 动态刷新配置</span>
+<span class="ann">@RestController</span>
+<span class="ann">@RefreshScope</span>  <span class="cm">// 配置变更时自动刷新 Bean</span>
+<span class="kw">public class</span> <span class="type">ConfigController</span> {
+    <span class="ann">@Value</span>(<span class="str">"${custom.config.value}"</span>)
+    <span class="kw">private</span> String configValue;
+}
+
+<span class="cm">// 监听配置变更事件</span>
+<span class="ann">@Component</span>
+<span class="kw">public class</span> <span class="type">ConfigListener</span> {
+    <span class="ann">@EventListener</span>
+    <span class="kw">public void</span> onRefresh(RefreshScopeRefreshedEvent event) {
+        log.info(<span class="str">"配置已刷新: {}"</span>, event.getName());
+    }
+}</pre>
+
+        <div class="info-box info">
+          <strong>💡 配置优先级</strong>
+          Nacos 配置 > application-{profile}.yml > application.yml > 共享配置。多个 shared-configs 按顺序加载，后加载的覆盖先加载的。
+        </div>
+      </section>
+
+      <!-- ==================== 网关 ==================== -->
+      <section class="knowledge-section" id="cloud-gateway">
+        <h2>🚪 API 网关</h2>
+
+        <h3>网关技术对比</h3>
+        <table>
+          <tr><th>特性</th><th>Zuul 1.x</th><th>Spring Cloud Gateway</th><th>Zuul 2.x</th><th>APISIX</th></tr>
+          <tr><td>开发语言</td><td>Java</td><td>Java</td><td>Java</td><td>Java（Nginx+Lua）</td></tr>
+          <tr><td>I/O 模型</td><td>Servlet 阻塞</td><td>WebFlux 响应式</td><td>Netty 非阻塞</td><td>Nginx 事件驱动</td></tr>
+          <tr><td>性能</td><td>低（~1k QPS）</td><td>高（~10k+ QPS）</td><td>高</td><td>极高（~100k QPS）</td></tr>
+          <tr><td>动态路由</td><td>需重启/Refresh</td><td>✅ Nacos 动态路由</td><td>✅</td><td>✅ etcd 动态路由</td></tr>
+          <tr><td>限流</td><td>需自己实现</td><td>✅ 内置限流过滤器</td><td>需自己实现</td><td>✅ 丰富的限流插件</td></tr>
+          <tr><td>熔断</td><td>配合 Hystrix</td><td>配合 Resilience4j</td><td>内置</td><td>✅ 插件支持</td></tr>
+          <tr><td>维护状态</td><td>❌ Netflix 停更</td><td>✅ 官方主推</td><td>❌ 不活跃</td><td>✅ Apache 顶级项目</td></tr>
+          <tr><td>适用场景</td><td>遗留项目</td><td>Spring Cloud 微服务</td><td>不推荐</td><td>高性能/云原生</td></tr>
+        </table>
+
+        <h3>Spring Cloud Gateway 核心概念</h3>
+        <ul>
+          <li><strong>Route（路由）</strong>：网关的基本单元，由 ID、URI、Predicate、Filter 组成</li>
+          <li><strong>Predicate（断言）</strong>：匹配请求条件（Path、Method、Header、Query 等）</li>
+          <li><strong>Filter（过滤器）</strong>：对请求/响应进行处理（添加 Header、限流、鉴权等）</li>
+        </ul>
+
+        <h3>Gateway 完整配置示例</h3>
+        <pre data-lang="yaml"><span class="cm"># Spring Cloud Gateway 完整配置</span>
+spring:
+  cloud:
+    gateway:
+      <span class="cm"># 全局跨域配置</span>
+      globalcors:
+        cors-configurations:
+          <span class="str">'[/**]'</span>:
+            allowedOriginPatterns: <span class="str">"*"</span>
+            allowedMethods: [<span class="str">"GET"</span>, <span class="str">"POST"</span>, <span class="str">"PUT"</span>, <span class="str">"DELETE"</span>]
+            allowCredentials: true
+
+      <span class="cm"># 路由配置</span>
+      routes:
+        <span class="cm"># 用户服务</span>
+        - id: user-service
+          uri: lb://user-service          <span class="cm"># lb:// 表示从注册中心负载均衡</span>
+          predicates:
+            - Path=/api/user/**
+            - Method=GET,POST
+          filters:
+            - StripPrefix=1               <span class="cm"># 去掉 /api 前缀</span>
+            - name: RequestRateLimiter     <span class="cm"># 限流过滤器</span>
+              args:
+                redis-rate-limiter:
+                  replenishRate: 10        <span class="cm"># 每秒 10 个请求</span>
+                  burstCapacity: 20        <span class="cm"># 突发容量 20</span>
+                key-resolver: "#{@ipKeyResolver}"
+
+        <span class="cm"># 订单服务</span>
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker         <span class="cm"># 熔断过滤器</span>
+              args:
+                name: orderCircuitBreaker
+                fallbackUri: forward:/fallback/order
+
+        <span class="cm"># Nacos 动态路由（推荐）</span>
+      discovery:
+        locator:
+          enabled: true                    <span class="cm"># 自动根据 service-id 生成路由</span>
+          lower-case-service-id: true      <span class="cm"># 服务名小写</span></pre>
+
+        <h3>Gateway 自定义过滤器</h3>
+        <pre data-lang="java"><span class="cm">// 全局鉴权过滤器</span>
+<span class="ann">@Component</span>
+<span class="kw">public class</span> <span class="type">AuthFilter</span> <span class="kw">implements</span> GlobalFilter, Ordered {
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> Mono&lt;Void&gt; filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String token = exchange.getRequest().getHeaders().getFirst(<span class="str">"Authorization"</span>);
+        <span class="kw">if</span> (!StringUtils.hasText(token) || !validateToken(token)) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            <span class="kw">return</span> exchange.getResponse().setComplete();
+        }
+        <span class="cm">// 将用户信息传递给下游服务</span>
+        ServerHttpRequest request = exchange.getRequest().mutate()
+            .header(<span class="str">"X-User-Id"</span>, getUserId(token))
+            .build();
+        <span class="kw">return</span> chain.filter(exchange.mutate().request(request).build());
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public int</span> getOrder() { <span class="kw">return</span> -1; } <span class="cm">// 优先级最高</span>
+}
+
+<span class="cm">// IP 限流 Key 解析器</span>
+<span class="ann">@Bean</span>
+<span class="kw">public</span> KeyResolver ipKeyResolver() {
+    <span class="kw">return</span> exchange -&gt; Mono.just(
+        exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+    );
+}</pre>
+
+        <div class="info-box warning">
+          <strong>⚠️ Zuul 1.x 为什么被淘汰？</strong>
+          Zuul 1.x 基于 Servlet 阻塞 I/O，每个请求占用一个线程，并发能力有限（~1k QPS）。
+          Gateway 基于 WebFlux + Netty 响应式编程，单线程可处理大量请求，性能提升 10 倍以上。
+          Zuul 2.x 虽然改为非阻塞，但 Netflix 已停止维护，社区不活跃。
+        </div>
+      </section>
+
+      <!-- ==================== 负载均衡 ==================== -->
+      <section class="knowledge-section" id="cloud-lb">
+        <h2>⚖️ 负载均衡</h2>
+
+        <h3>Ribbon vs Spring Cloud LoadBalancer</h3>
+        <table>
+          <tr><th>特性</th><th>Ribbon</th><th>Spring Cloud LoadBalancer</th></tr>
+          <tr><td>维护状态</td><td>❌ 进入维护模式</td><td>✅ 官方主推</td></tr>
+          <tr><td>编程模型</td><td>命令式</td><td>响应式（WebFlux）</td></tr>
+          <tr><td>负载策略</td><td>7 种内置策略</td><td>RoundRobin + Random（可扩展）</td></tr>
+          <tr><td>集成方式</td><td>@RibbonClient</td><td>@LoadBalancerClient</td></tr>
+          <tr><td>服务缓存</td><td>本地缓存 + 定时刷新</td><td>CaffeineCache + 事件通知</td></tr>
+          <tr><td>重试机制</td><td>需手动实现</td><td>✅ 内置 RetryFilter</td></tr>
+        </table>
+
+        <h3>负载均衡策略</h3>
+        <pre data-lang="java"><span class="cm">// Spring Cloud LoadBalancer 自定义策略</span>
+<span class="ann">@Configuration</span>
+<span class="kw">public class</span> <span class="type">LoadBalancerConfig</span> {
+
+    <span class="cm">// 基于权重的负载均衡（Nacos 权重）</span>
+    <span class="ann">@Bean</span>
+    <span class="kw">public</span> ReactorServiceInstanceLoadBalancer nacosLoadBalancer(
+            ReactorLoadBalancer&lt;ServiceInstance&gt; randomBalancer) {
+        <span class="kw">return new</span> NacosLoadBalancer(randomBalancer);
+    }
+}
+
+<span class="cm">// Ribbon 常见策略（了解即可）</span>
+<span class="cm">// RoundRobinRule    - 轮询（默认）</span>
+<span class="cm">// RandomRule        - 随机</span>
+<span class="cm">// WeightedResponseTimeRule - 响应时间权重</span>
+<span class="cm">// BestAvailableRule - 最小并发数</span>
+<span class="cm">// ZoneAvoidanceRule - 区域感知（默认复合策略）</span></pre>
+
+        <div class="info-box info">
+          <strong>💡 从 Ribbon 迁移到 LoadBalancer</strong>
+          ① 移除 spring-cloud-starter-netflix-ribbon 依赖；② 添加 spring-cloud-starter-loadbalancer；③ 将 @RibbonClient 替换为 @LoadBalancerClient；④ 配置类从 Ribbon 自定义改为 LoadBalancer 自定义。
+        </div>
+      </section>
+
+      <!-- ==================== 服务调用 ==================== -->
+      <section class="knowledge-section" id="cloud-call">
+        <h2>📞 服务调用</h2>
+
+        <h3>服务调用方案对比</h3>
+        <table>
+          <tr><th>特性</th><th>RestTemplate</th><th>OpenFeign</th><th>gRPC</th><th>Spring Cloud RestClient</th></tr>
+          <tr><td>编程模型</td><td>命令式</td><td>声明式接口</td><td>.proto 文件生成</td><td>命令式（Fluent API）</td></tr>
+          <tr><td>序列化</td><td>JSON</td><td>JSON</td><td>Protobuf（二进制）</td><td>JSON</td></tr>
+          <tr><td>性能</td><td>一般</td><td>一般</td><td>极高</td><td>一般</td></tr>
+          <tr><td>代码量</td><td>多</td><td>少（接口 + 注解）</td><td>中（需生成代码）</td><td>中</td></tr>
+          <tr><td>跨语言</td><td>✅</td><td>✅</td><td>✅ 多语言支持好</td><td>✅</td></tr>
+          <tr><td>流式调用</td><td>❌</td><td>❌</td><td>✅ 双向流</td><td>✅ 支持 SSE</td></tr>
+          <tr><td>适用场景</td><td>简单调用</td><td>Spring Cloud 微服务</td><td>高性能/跨语言</td><td>Spring Boot 3.2+ 新项目</td></tr>
+        </table>
+
+        <h3>OpenFeign 核心用法</h3>
+        <pre data-lang="java"><span class="cm">// 1. 启用 OpenFeign</span>
+<span class="ann">@SpringBootApplication</span>
+<span class="ann">@EnableFeignClients</span>
+<span class="kw">public class</span> <span class="type">Application</span> {}
+
+<span class="cm">// 2. 声明 Feign 客户端</span>
+<span class="ann">@FeignClient</span>(
+    name = <span class="str">"user-service"</span>,               <span class="cm">// 服务名</span>
+    path = <span class="str">"/api/user"</span>,
+    fallbackFactory = UserClientFallback.<span class="kw">class</span>  <span class="cm">// 降级工厂</span>
+)
+<span class="kw">public interface</span> <span class="type">UserClient</span> {
+    <span class="ann">@GetMapping</span>(<span class="str">"/{id}"</span>)
+    Result&lt;User&gt; getUser(<span class="ann">@PathVariable</span>(<span class="str">"id"</span>) Long id);
+
+    <span class="ann">@PostMapping</span>
+    Result&lt;User&gt; createUser(<span class="ann">@RequestBody</span> UserDTO user);
+}
+
+<span class="cm">// 3. 降级工厂（服务不可用时的兜底逻辑）</span>
+<span class="ann">@Component</span>
+<span class="kw">public class</span> <span class="type">UserClientFallback</span> <span class="kw">implements</span> FallbackFactory&lt;UserClient&gt; {
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> UserClient create(Throwable cause) {
+        <span class="kw">return new</span> UserClient() {
+            <span class="ann">@Override</span>
+            <span class="kw">public</span> Result&lt;User&gt; getUser(Long id) {
+                <span class="kw">return</span> Result.fail(<span class="str">"用户服务不可用，请稍后重试"</span>);
+            }
+        };
+    }
+}
+
+<span class="cm">// 4. 使用</span>
+<span class="ann">@RestController</span>
+<span class="kw">public class</span> <span class="type">OrderController</span> {
+    <span class="ann">@Resource</span>
+    <span class="kw">private</span> UserClient userClient;
+
+    <span class="ann">@GetMapping</span>(<span class="str">"/order/{orderId}"</span>)
+    <span class="kw">public</span> Result&lt;OrderVO&gt; getOrder(<span class="ann">@PathVariable</span> Long orderId) {
+        Order order = orderService.getById(orderId);
+        <span class="cm">// Feign 调用用户服务</span>
+        Result&lt;User&gt; userResult = userClient.getUser(order.getUserId());
+        <span class="kw">return</span> Result.ok(buildOrderVO(order, userResult.getData()));
+    }
+}</pre>
+
+        <h3>Spring Cloud RestClient（3.2+ 新特性）</h3>
+        <pre data-lang="java"><span class="cm">// RestClient 是 RestTemplate 的现代替代品（Fluent API）</span>
+<span class="ann">@Bean</span>
+<span class="kw">public</span> RestClient restClient(LoadBalancerInterceptor interceptor) {
+    <span class="kw">return</span> RestClient.builder()
+        .baseUrl(<span class="str">"http://user-service"</span>)
+        .requestInterceptor(interceptor)   <span class="cm">// 集成负载均衡</span>
+        .build();
+}
+
+<span class="cm">// 使用（链式调用，比 RestTemplate 更优雅）</span>
+User user = restClient.get()
+    .uri(<span class="str">"/api/user/{id}"</span>, userId)
+    .retrieve()
+    .body(User.<span class="kw">class</span>);</pre>
+      </section>
+
+      <!-- ==================== 熔断限流 ==================== -->
+      <section class="knowledge-section" id="cloud-circuit">
+        <h2>🛡️ 熔断与限流</h2>
+
+        <h3>熔断组件对比</h3>
+        <table>
+          <tr><th>特性</th><th>Hystrix</th><th>Sentinel</th><th>Resilience4j</th></tr>
+          <tr><td>维护状态</td><td>❌ Netflix 停更</td><td>✅ 阿里活跃维护</td><td>✅ 社区活跃</td></tr>
+          <tr><td>隔离策略</td><td>线程池 / 信号量</td><td>信号量</td><td>线程池 / 信号量</td></tr>
+          <tr><td>熔断策略</td><td>错误比例</td><td>慢调用/异常比例/异常数</td><td>错误比例/计数/响应时间</td></tr>
+          <tr><td>流控</td><td>线程池隔离（间接）</td><td>✅ QPS/线程数/关联/链路</td><td>✅ RateLimiter</td></tr>
+          <tr><td>热点限流</td><td>❌</td><td>✅ 热点参数</td><td>❌</td></tr>
+          <tr><td>集群限流</td><td>❌</td><td>✅ Token Server</td><td>❌</td></tr>
+          <tr><td>控制台</td><td>Dashboard（功能弱）</td><td>✅ 功能完善的 Dashboard</td><td>❌（第三方监控）</td></tr>
+          <tr><td>规则推送</td><td>代码配置</td><td>Nacos/ZK 动态推送</td><td>配置文件/代码</td></tr>
+          <tr><td>编程模型</td><td>命令式</td><td>命令式 + 注解</td><td>函数式 + 注解</td></tr>
+          <tr><td>适用场景</td><td>遗留项目</td><td>国内微服务首选</td><td>国际化/轻量级</td></tr>
+        </table>
+
+        <h3>Sentinel 核心概念与实战</h3>
+        <h4>工作流程</h4>
+        <pre data-lang="text"><span class="cm">Sentinel 工作流程：</span>
+                ┌─────────────────────────────────────────┐
+                │              Sentinel Slot Chain          │
+                │                                          │
+  请求 ──────→ │  NodeSelectorSlot                        │
+                │    ↓                                     │
+                │  ClusterBuilderSlot (集群统计)            │
+                │    ↓                                     │
+                │  StatisticSlot (实时统计 QPS/RT)          │
+                │    ↓                                     │
+                │  FlowSlot ⭐ (限流：QPS/线程数)           │
+                │    ↓                                     │
+                │  DegradeSlot ⭐ (熔断：慢调用/异常)       │
+                │    ↓                                     │
+                │  SystemSlot (系统保护：CPU/Load)          │
+                │    ↓                                     │
+                │  业务逻辑                                │
+                └─────────────────────────────────────────┘</pre>
+
+        <h4>Sentinel 注解实战</h4>
+        <pre data-lang="java"><span class="cm">// @SentinelResource 注解方式</span>
+<span class="ann">@SentinelResource</span>(
+    value = <span class="str">"getOrder"</span>,
+    blockHandler = <span class="str">"getOrderBlock"</span>,   <span class="cm">// 限流/降级处理</span>
+    fallback = <span class="str">"getOrderFallback"</span>,    <span class="cm">// 业务异常兜底</span>
+    exceptionsToIgnore = BusinessException.<span class="kw">class</span>
+)
+<span class="kw">public</span> Order getOrder(Long id) {
+    <span class="kw">return</span> orderMapper.selectById(id);
+}
+
+<span class="cm">// 限流/降级处理方法（参数必须与原方法一致，加 BlockException）</span>
+<span class="kw">public</span> Order getOrderBlock(Long id, BlockException ex) {
+    log.warn(<span class="str">"限流: {}"</span>, ex.getClass().getSimpleName());
+    <span class="kw">return</span> Order.defaultOrder();
+}
+
+<span class="cm">// 业务异常兜底</span>
+<span class="kw">public</span> Order getOrderFallback(Long id, Throwable t) {
+    log.warn(<span class="str">"降级: {}"</span>, t.getMessage());
+    <span class="kw">return</span> Order.defaultOrder();
+}</pre>
+
+        <h4>Sentinel + Nacos 动态规则推送</h4>
+        <pre data-lang="yaml"><span class="cm"># application.yml</span>
+spring:
+  cloud:
+    sentinel:
+      datasource:
+        flow:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            dataId: ${spring.application.name}-flow-rules
+            groupId: SENTINEL_GROUP
+            rule-type: flow             <span class="cm"># 流控规则</span>
+        degrade:
+          nacos:
+            server-addr: 127.0.0.1:8848
+            dataId: ${spring.application.name}-degrade-rules
+            groupId: SENTINEL_GROUP
+            rule-type: degrade          <span class="cm"># 熔断规则</span></pre>
+
+        <h3>Resilience4j 核心用法（国际化方案）</h3>
+        <pre data-lang="java"><span class="cm">// Resilience4j 轻量级熔断器</span>
+<span class="cm">// 1. 断路器（CircuitBreaker）</span>
+CircuitBreakerConfig config = CircuitBreakerConfig.custom()
+    .failureRateThreshold(50)           <span class="cm">// 失败率 50% 触发熔断</span>
+    .waitDurationInOpenState(Duration.ofSeconds(10))  <span class="cm">// 熔断 10 秒</span>
+    .slidingWindowSize(10)              <span class="cm">// 滑动窗口大小</span>
+    .build();
+
+CircuitBreaker cb = CircuitBreaker.of(<span class="str">"userService"</span>, config);
+
+<span class="cm">// 2. 组合使用：断路器 + 限流 + 重试</span>
+Supplier&lt;Order&gt; decoratedSupplier = Decorators.ofSupplier(() -&gt; getOrder(id))
+    .withCircuitBreaker(cb)
+    .withRateLimiter(rateLimiter)
+    .withRetry(retry)
+    .decorate();
+
+<span class="cm">// 3. Spring Boot 注解方式</span>
+<span class="ann">@CircuitBreaker</span>(name = <span class="str">"userService"</span>, fallbackMethod = <span class="str">"fallback"</span>)
+<span class="ann">@RateLimiter</span>(name = <span class="str">"userService"</span>)
+<span class="ann">@Retry</span>(name = <span class="str">"userService"</span>)
+<span class="kw">public</span> Order getOrder(Long id) { <span class="cm">/* ... */</span> }</pre>
+
+        <h4>Sentinel vs Resilience4j 面试对比</h4>
+        <div class="info-box tip">
+          <strong>💡 面试话术</strong>
+          "Sentinel 功能更全面，有 Dashboard、热点限流、集群限流、Nacos 动态规则，适合国内项目。Resilience4j 更轻量，基于函数式编程，与 Spring Cloud 官方深度集成，适合国际项目。两者都比 Hystrix 强大，Hystrix 已停更不推荐使用。"
+        </div>
+      </section>
+
+      <!-- ==================== Seata ==================== -->
+      <section class="knowledge-section" id="cloud-seata">
+        <h2>🔄 分布式事务 Seata</h2>
+
+        <h3>Seata 四种模式对比</h3>
+        <table>
+          <tr><th>模式</th><th>一致性</th><th>性能</th><th>侵入性</th><th>适用场景</th></tr>
+          <tr><td>AT（推荐）</td><td>最终一致</td><td>⭐⭐⭐⭐</td><td>低（无侵入）</td><td>大多数业务场景</td></tr>
+          <tr><td>TCC</td><td>最终一致</td><td>⭐⭐⭐⭐⭐</td><td>高（三个接口）</td><td>高性能/资金场景</td></tr>
+          <tr><td>SAGA</td><td>最终一致</td><td>⭐⭐⭐⭐</td><td>中（状态机）</td><td>长事务/跨系统</td></tr>
+          <tr><td>XA</td><td>强一致</td><td>⭐⭐</td><td>低</td><td>强一致性要求</td></tr>
+        </table>
+
+        <h3>AT 模式原理（核心）</h3>
+        <pre data-lang="text"><span class="cm">AT 模式执行流程（两阶段）：</span>
+
+<span class="cm">第一阶段（业务执行）：</span>
+1. 解析 SQL，生成 before image（执行前数据快照）
+2. 执行业务 SQL
+3. 生成 after image（执行后数据快照）
+4. before/after image 写入 undo_log 表（本地事务）
+5. 注册分支事务到 TC（Transaction Coordinator）
+6. 提交本地事务，释放锁
+
+<span class="cm">第二阶段 - 提交（正常情况）：</span>
+1. TC 通知所有分支：全局提交
+2. 分支只需删除 undo_log（异步，性能好）
+3. 结束
+
+<span class="cm">第二阶段 - 回滚（异常情况）：</span>
+1. TC 通知所有分支：全局回滚
+2. 分支读取 undo_log 中的 before image
+3. 校验当前数据是否与 after image 一致（防脏写）
+4. 用 before image 生成反向 SQL 执行回滚
+5. 删除 undo_log</pre>
+
+        <h3>Seata AT 实战配置</h3>
+        <pre data-lang="java"><span class="cm">// 1. 全局事务注解</span>
+<span class="ann">@GlobalTransactional</span>(timeoutMills = 30000, name = <span class="str">"create-order"</span>)
+<span class="kw">public void</span> createOrder(OrderDTO dto) {
+    <span class="cm">// 1. 扣减库存（远程调用，分支事务）</span>
+    storageClient.deduct(dto.getItemId(), dto.getCount());
+    <span class="cm">// 2. 扣减余额（远程调用，分支事务）</span>
+    accountClient.debit(dto.getUserId(), dto.getTotalAmount());
+    <span class="cm">// 3. 创建订单（本地事务，分支事务）</span>
+    orderMapper.insert(buildOrder(dto));
+    <span class="cm">// 任一分支异常 → 全局回滚</span>
+}</pre>
+
+        <pre data-lang="yaml"><span class="cm"># Seata 配置</span>
+seata:
+  application-id: ${spring.application.name}
+  tx-service-group: my_tx_group           <span class="cm"># 事务组</span>
+  registry:
+    type: nacos                            <span class="cm"># 注册中心</span>
+    nacos:
+      server-addr: 127.0.0.1:8848
+  config:
+    type: nacos                            <span class="cm"># 配置中心</span>
+    nacos:
+      server-addr: 127.0.0.1:8848
+  service:
+    vgroup-mapping:
+      my_tx_group: default                 <span class="cm"># 事务组映射到集群</span></pre>
+
+        <div class="info-box warning">
+          <strong>⚠️ AT 模式注意事项</strong>
+          ① 必须有主键（undo_log 需要）；② 不支持 SELECT FOR UPDATE（需要手动处理）；③ 全局锁会导致性能下降，大事务慎用；④ 多数据源场景需保证 undo_log 与业务数据在同一库。
+        </div>
+      </section>
+
+      <!-- ==================== 可观测性 ==================== -->
+      <section class="knowledge-section" id="cloud-observability">
+        <h2>📊 可观测性</h2>
+
+        <h3>三大支柱：Metrics + Tracing + Logging</h3>
+        <table>
+          <tr><th>支柱</th><th>旧方案</th><th>新方案（Spring Boot 3.x）</th></tr>
+          <tr><td>指标（Metrics）</td><td>Spring Boot Actuator + Prometheus</td><td>Micrometer Metrics ✅</td></tr>
+          <tr><td>追踪（Tracing）</td><td>Spring Cloud Sleuth + Zipkin</td><td>Micrometer Tracing + Zipkin/OTLP ✅</td></tr>
+          <tr><td>日志（Logging）</td><td>ELK / Loki</td><td>统一日志 + TraceId 关联 ✅</td></tr>
+        </table>
+
+        <h3>Micrometer Tracing（替代 Sleuth）</h3>
+        <pre data-lang="xml"><span class="cm">&lt;!-- pom.xml --&gt;</span>
+<span class="kw">&lt;dependency&gt;</span>
+    <span class="kw">&lt;groupId&gt;</span>io.micrometer<span class="kw">&lt;/groupId&gt;</span>
+    <span class="kw">&lt;artifactId&gt;</span>micrometer-tracing-bridge-otel<span class="kw">&lt;/artifactId&gt;</span>
+<span class="kw">&lt;/dependency&gt;</span>
+<span class="kw">&lt;dependency&gt;</span>
+    <span class="kw">&lt;groupId&gt;</span>io.opentelemetry<span class="kw">&lt;/groupId&gt;</span>
+    <span class="kw">&lt;artifactId&gt;</span>opentelemetry-exporter-zipkin<span class="kw">&lt;/artifactId&gt;</span>
+<span class="kw">&lt;/dependency&gt;</span></pre>
+
+        <pre data-lang="yaml"><span class="cm"># application.yml - 可观测性配置</span>
+management:
+  tracing:
+    sampling:
+      probability: 1.0                   <span class="cm"># 采样率（生产建议 0.1）</span>
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+  metrics:
+    tags:
+      application: ${spring.application.name}</pre>
+
+        <h3>SkyWalking（国产 APM 方案）</h3>
+        <ul>
+          <li><strong>无侵入</strong>：Java Agent 字节码增强，无需改代码</li>
+          <li><strong>全链路追踪</strong>：自动追踪 HTTP、Dubbo、MQ、数据库调用</li>
+          <li><strong>性能监控</strong>：JVM、线程池、连接池等运行时指标</li>
+          <li><strong>告警</strong>：支持自定义告警规则（Webhook、钉钉、飞书）</li>
+        </ul>
+
+        <div class="info-box tip">
+          <strong>💡 面试建议</strong>
+          Spring Boot 3.x 用 Micrometer Tracing + OpenTelemetry 是官方推荐方案。
+          国内项目很多用 SkyWalking（无侵入、功能全面）。
+          面试时能说出 Sleuth → Micrometer Tracing 的演进是加分项。
+        </div>
+      </section>
+
+      <!-- ==================== Service Mesh ==================== -->
+      <section class="knowledge-section" id="cloud-mesh">
+        <h2>🕸️ Service Mesh</h2>
+
+        <h3>Spring Cloud vs Service Mesh</h3>
+        <table>
+          <tr><th>维度</th><th>Spring Cloud</th><th>Service Mesh（Istio）</th></tr>
+          <tr><td>架构</td><td>SDK 嵌入应用</td><td>Sidecar 代理（Envoy）</td></tr>
+          <tr><td>语言限制</td><td>仅 Java</td><td>语言无关</td></tr>
+          <tr><td>服务治理</td><td>业务代码 + SDK</td><td>基础设施层，业务无感知</td></tr>
+          <tr><td>升级成本</td><td>需升级 SDK + 重新部署</td><td>升级 Sidecar 即可</td></tr>
+          <tr><td>性能开销</td><td>进程内调用，低</td><td>多一跳代理，略高</td></tr>
+          <tr><td>学习曲线</td><td>Java 开发者友好</td><td>需 K8s + 网络知识</td></tr>
+          <tr><td>适用场景</td><td>中小团队 / Java 为主</td><td>大团队 / 多语言 / 云原生</td></tr>
+        </table>
+
+        <h3>Istio 核心架构</h3>
+        <pre data-lang="text"><span class="cm">Istio 架构：</span>
+┌─────────────────────────────────────────────────┐
+│                  Control Plane                    │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐    │
+│  │   istiod   │  │  Citadel  │  │  Pilot    │    │
+│  │ (核心组件)  │  │ (证书管理) │  │ (配置下发) │    │
+│  └───────────┘  └───────────┘  └───────────┘    │
+└─────────────────────────────────────────────────┘
+         │              │              │
+    配置下发        证书下发       路由规则
+         ▼              ▼              ▼
+┌────────────┐    ┌────────────┐    ┌────────────┐
+│  Service A │    │  Service B │    │  Service C │
+│  ┌───────┐ │    │  ┌───────┐ │    │  ┌───────┐ │
+│  │ Envoy │←┼────┼──│ Envoy │←┼────┼──│ Envoy │ │
+│  │Sidecar│ │    │  │Sidecar│ │    │  │Sidecar│ │
+│  └───────┘ │    │  └───────┘ │    │  └───────┘ │
+└────────────┘    └────────────┘    └────────────┘</pre>
+
+        <h3>Istio 核心功能</h3>
+        <ul>
+          <li><strong>流量管理</strong>：金丝雀发布、A/B 测试、流量镜像</li>
+          <li><strong>安全</strong>：mTLS 双向认证、JWT 验证、RBAC</li>
+          <li><strong>可观测性</strong>：自动采集 Metrics、Tracing、Access Log</li>
+          <li><strong>弹性</strong>：超时、重试、熔断（基于 Envoy，无需代码改动）</li>
+        </ul>
+
+        <div class="info-box info">
+          <strong>💡 面试观点</strong>
+          Service Mesh 是微服务治理的未来趋势，但目前 Spring Cloud 在国内仍是主流。
+          面试时能清晰对比两者的优劣势，说明你对技术趋势有深入理解。
+          大厂（字节、阿里、腾讯）在逐步向 Service Mesh 迁移。
+        </div>
+      </section>
+
+<!-- ==================== 事务 ==================== -->
       <section class="knowledge-section" id="transaction">
         <h2>💳 Spring 事务管理</h2>
 
