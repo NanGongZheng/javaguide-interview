@@ -175,3 +175,198 @@ document.addEventListener('click', (e) => {
     }
   }
 });
+
+// ===== Floating TOC + Back to Top =====
+document.addEventListener('DOMContentLoaded', () => {
+  initFloatingToc();
+  initBackToTop();
+});
+
+function initFloatingToc() {
+  const pageToc = document.querySelector('.toc');
+  if (!pageToc) return;
+
+  // Build floating TOC from page's .toc
+  const floating = document.createElement('div');
+  floating.className = 'floating-toc';
+  floating.id = 'floatingToc';
+
+  const title = document.createElement('div');
+  title.className = 'floating-toc-title';
+  title.textContent = '📑 目录';
+  floating.appendChild(title);
+
+  const list = document.createElement('ul');
+  list.className = 'floating-toc-list';
+
+  // Parse the page TOC structure
+  const tocItems = pageToc.querySelectorAll('.toc-list > li');
+  tocItems.forEach(item => {
+    const link = item.querySelector(':scope > a');
+    const subList = item.querySelector('.toc-sub');
+    const li = document.createElement('li');
+
+    if (link) {
+      const a = document.createElement('a');
+      a.href = link.getAttribute('href');
+      a.textContent = link.textContent;
+      a.dataset.target = link.getAttribute('href');
+      li.appendChild(a);
+    }
+
+    if (subList) {
+      const ul = document.createElement('ul');
+      ul.className = 'ftoc-sub';
+      subList.querySelectorAll('li').forEach(subLi => {
+        const subLink = subLi.querySelector('a');
+        const subText = subLi.textContent.trim();
+        const subA = document.createElement('a');
+        if (subLink) {
+          subA.href = subLink.getAttribute('href');
+          subA.dataset.target = subLink.getAttribute('href');
+        } else {
+          // Plain text (interview page sub-items without links)
+          subA.href = '#';
+          subA.style.cursor = 'default';
+          subA.style.opacity = '0.5';
+        }
+        subA.textContent = subText;
+        const subLiEl = document.createElement('li');
+        subLiEl.appendChild(subA);
+        ul.appendChild(subLiEl);
+      });
+      li.appendChild(ul);
+    }
+
+    list.appendChild(li);
+  });
+
+  floating.appendChild(list);
+  document.body.appendChild(floating);
+
+  // Mobile toggle button
+  const toggle = document.createElement('button');
+  toggle.className = 'floating-toc-toggle';
+  toggle.id = 'floatingTocToggle';
+  toggle.textContent = '📑';
+  toggle.title = '目录';
+  document.body.appendChild(toggle);
+
+  toggle.addEventListener('click', () => {
+    floating.classList.toggle('mobile-open');
+  });
+
+  // Close on click outside (mobile)
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.floating-toc') && !e.target.closest('.floating-toc-toggle')) {
+      floating.classList.remove('mobile-open');
+    }
+  });
+
+  // Smooth scroll for floating TOC links
+  floating.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a || !a.dataset.target || a.dataset.target === '#') return;
+    e.preventDefault();
+    const target = document.querySelector(a.dataset.target);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      floating.classList.remove('mobile-open');
+    }
+  });
+
+  // Scroll spy - highlight current section
+  initScrollSpy(floating);
+}
+
+function initScrollSpy(floating) {
+  const links = floating.querySelectorAll('a[data-target]');
+  const sections = [];
+
+  links.forEach(link => {
+    const targetId = link.dataset.target;
+    if (targetId && targetId !== '#') {
+      const el = document.querySelector(targetId);
+      if (el) sections.push({ el, link });
+    }
+  });
+
+  if (sections.length === 0) return;
+
+  let ticking = false;
+
+  function updateActive() {
+    const scrollY = window.scrollY;
+    const headerOffset = 80;
+    let current = null;
+
+    // Find the section that is currently in view
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const rect = sections[i].el.getBoundingClientRect();
+      if (rect.top <= headerOffset + 20) {
+        current = sections[i];
+        break;
+      }
+    }
+
+    // Remove all active
+    links.forEach(l => l.classList.remove('active'));
+
+    // Add active to current
+    if (current) {
+      current.link.classList.add('active');
+      // Also highlight parent if it's a sub-item
+      const parentLi = current.link.closest('.ftoc-sub');
+      if (parentLi) {
+        const parentA = parentLi.closest('li')?.querySelector(':scope > a');
+        if (parentA) parentA.classList.add('active');
+      }
+      // Scroll the active item into view within the floating TOC
+      current.link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(updateActive);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Initial highlight
+  updateActive();
+}
+
+// ===== Back to Top =====
+function initBackToTop() {
+  // Don't add if already exists
+  if (document.getElementById('backToTop')) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'back-to-top';
+  btn.id = 'backToTop';
+  btn.title = '回到顶部';
+  btn.innerHTML = '↑';
+  document.body.appendChild(btn);
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        if (window.scrollY > 300) {
+          btn.classList.add('visible');
+        } else {
+          btn.classList.remove('visible');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
