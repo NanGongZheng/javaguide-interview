@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MySQL 与 Redis - JavaGuide 面试突击</title>
+  <title>MySQL 与 Redis - java知识点总结</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
 </head>
@@ -11,7 +11,7 @@
   <header class="header">
     <div class="header-left">
       <button class="menu-toggle" id="menuToggle">☰</button>
-      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>JavaGuide 面试突击</span></a>
+      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>java知识点总结</span></a>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
         <div class="search-results" id="searchResults"></div>
@@ -29,6 +29,7 @@
     <div class="sidebar-section"><div class="sidebar-title">框架与生态</div><a href="spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a></div>
     <div class="sidebar-section"><div class="sidebar-title">数据库</div><a href="database.html" class="sidebar-link active"><span class="icon">🗄️</span>MySQL 与 Redis</a></div>
     <div class="sidebar-section"><div class="sidebar-title">分布式与架构</div><a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">实战项目</div><a href="projects.html" class="sidebar-link"><span class="icon">🚀</span>实战项目</a></div>
     <div class="sidebar-section"><div class="sidebar-title">面试专区</div><a href="interview.html" class="sidebar-link"><span class="icon">🎯</span>高频面试题精选</a></div>
   </nav>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -369,8 +370,271 @@
 }</pre>
       </section>
 
+      <!-- ==================== MyBatis ==================== -->
+      <section class="knowledge-section" id="mybatis">
+        <h2>🗃️ MyBatis 深入</h2>
+
+        <h3 id="mybatis-arch">架构与执行流程</h3>
+        <p>MyBatis 是一个半自动 ORM 框架，开发者手写 SQL，MyBatis 负责参数映射和结果集映射。</p>
+        <p><strong>核心组件：</strong></p>
+        <ul>
+          <li><strong>SqlSessionFactory</strong>：全局单例，负责创建 SqlSession（通过 SqlSessionFactoryBuilder 解析 XML/注解配置）</li>
+          <li><strong>SqlSession</strong>：一次数据库会话，非线程安全，每次请求创建新实例</li>
+          <li><strong>Executor</strong>：SQL 执行器（Simple、Reuse、Batch 三种类型）</li>
+          <li><strong>MappedStatement</strong>：封装一条 SQL 的所有信息（id、SQL 文本、参数类型、结果类型）</li>
+          <li><strong>StatementHandler</strong>：处理 JDBC Statement 的创建和参数设置</li>
+          <li><strong>ParameterHandler</strong>：将用户传入的参数设置到 PreparedStatement</li>
+          <li><strong>ResultSetHandler</strong>：将 JDBC ResultSet 转换为 Java 对象</li>
+        </ul>
+
+        <p><strong>执行流程：</strong></p>
+        <ol>
+          <li>加载配置文件（mybatis-config.xml + Mapper.xml），构建 <code>Configuration</code> 对象</li>
+          <li>创建 <code>SqlSessionFactory</code> → 打开 <code>SqlSession</code></li>
+          <li>通过 Mapper 接口的代理对象（MapperProxy）调用方法</li>
+          <li>Executor 查询时先检查二级缓存 → 一级缓存 → 查询数据库</li>
+          <li>StatementHandler 创建 PreparedStatement，ParameterHandler 设置参数</li>
+          <li>执行 SQL，ResultSetHandler 将结果映射为 Java 对象返回</li>
+        </ol>
+
+        <h3 id="mybatis-#vs$">#{} vs ${} 区别</h3>
+        <table>
+          <tr><th>对比项</th><th>#{}</th><th>${}</th></tr>
+          <tr><td>处理方式</td><td>预编译，使用 <code>?</code> 占位符</td><td>字符串拼接，直接替换</td></tr>
+          <tr><td>SQL 注入</td><td>✅ 安全，防止 SQL 注入</td><td>❌ 不安全，有 SQL 注入风险</td></tr>
+          <tr><td>使用场景</td><td>参数值传递（WHERE、INSERT 值）</td><td>动态表名、列名、ORDER BY</td></tr>
+          <tr><td>JDBC 对应</td><td>PreparedStatement</td><td>Statement</td></tr>
+        </table>
+
+        <pre data-lang="xml"><span class="cm">&lt;!-- #{} 预编译，安全 --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"getUserById"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user WHERE id = #{id}
+    <span class="cm">&lt;!-- 最终执行：SELECT * FROM user WHERE id = ? --&gt;</span>
+<span class="tag">&lt;/select&gt;</span>
+
+<span class="cm">&lt;!-- ${} 字符串拼接，仅用于动态列名/表名 --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"selectByColumn"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user ORDER BY ${columnName} ${order}
+    <span class="cm">&lt;!-- 最终执行：SELECT * FROM user ORDER BY create_time DESC --&gt;</span>
+<span class="tag">&lt;/select&gt;</span></pre>
+
+        <div class="info-box warning">
+          <strong>⚠️ 安全提醒</strong>
+          使用 <code>${}</code> 时必须在代码层做白名单校验，防止 SQL 注入。例如限制 <code>columnName</code> 只能是已知的列名。
+        </div>
+
+        <h3 id="mybatis-dynamic">动态 SQL</h3>
+        <p>MyBatis 提供强大的动态 SQL 标签，避免手动拼接 SQL 字符串：</p>
+
+        <pre data-lang="xml"><span class="cm">&lt;!-- if - 条件判断 --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"findUsers"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user WHERE 1=1
+    <span class="tag">&lt;if</span> test=<span class="str">"name != null and name != ''"</span><span class="tag">&gt;</span>
+        AND name LIKE CONCAT('%', #{name}, '%')
+    <span class="tag">&lt;/if&gt;</span>
+    <span class="tag">&lt;if</span> test=<span class="str">"age != null"</span><span class="tag">&gt;</span>
+        AND age = #{age}
+    <span class="tag">&lt;/if&gt;</span>
+<span class="tag">&lt;/select&gt;</span>
+
+<span class="cm">&lt;!-- where - 自动去除前导 AND/OR --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"findUsers"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user
+    <span class="tag">&lt;where&gt;</span>
+        <span class="tag">&lt;if</span> test=<span class="str">"name != null"</span><span class="tag">&gt;</span> AND name = #{name} <span class="tag">&lt;/if&gt;</span>
+        <span class="tag">&lt;if</span> test=<span class="str">"age != null"</span><span class="tag">&gt;</span> AND age = #{age} <span class="tag">&lt;/if&gt;</span>
+    <span class="tag">&lt;/where&gt;</span>
+<span class="tag">&lt;/select&gt;</span>
+
+<span class="cm">&lt;!-- foreach - 遍历集合（批量查询/插入） --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"findByIds"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user WHERE id IN
+    <span class="tag">&lt;foreach</span> collection=<span class="str">"ids"</span> item=<span class="str">"id"</span> open=<span class="str">"("</span> separator=<span class="str">","</span> close=<span class="str">")"</span><span class="tag">&gt;</span>
+        #{id}
+    <span class="tag">&lt;/foreach&gt;</span>
+<span class="tag">&lt;/select&gt;</span>
+
+<span class="cm">&lt;!-- choose/when/otherwise - 类似 switch-case --&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"findUser"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT * FROM user
+    <span class="tag">&lt;where&gt;</span>
+        <span class="tag">&lt;choose&gt;</span>
+            <span class="tag">&lt;when</span> test=<span class="str">"id != null"</span><span class="tag">&gt;</span> id = #{id} <span class="tag">&lt;/when&gt;</span>
+            <span class="tag">&lt;when</span> test=<span class="str">"name != null"</span><span class="tag">&gt;</span> name = #{name} <span class="tag">&lt;/when&gt;</span>
+            <span class="tag">&lt;otherwise&gt;</span> 1 = 1 <span class="tag">&lt;/otherwise&gt;</span>
+        <span class="tag">&lt;/choose&gt;</span>
+    <span class="tag">&lt;/where&gt;</span>
+<span class="tag">&lt;/select&gt;</span>
+
+<span class="cm">&lt;!-- set - UPDATE 语句自动去除末尾逗号 --&gt;</span>
+<span class="tag">&lt;update</span> id=<span class="str">"updateUser"</span><span class="tag">&gt;</span>
+    UPDATE user
+    <span class="tag">&lt;set&gt;</span>
+        <span class="tag">&lt;if</span> test=<span class="str">"name != null"</span><span class="tag">&gt;</span> name = #{name}, <span class="tag">&lt;/if&gt;</span>
+        <span class="tag">&lt;if</span> test=<span class="str">"age != null"</span><span class="tag">&gt;</span> age = #{age}, <span class="tag">&lt;/if&gt;</span>
+    <span class="tag">&lt;/set&gt;</span>
+    WHERE id = #{id}
+<span class="tag">&lt;/update&gt;</span>
+
+<span class="cm">&lt;!-- sql/include - SQL 片段复用 --&gt;</span>
+<span class="tag">&lt;sql</span> id=<span class="str">"baseColumns"</span><span class="tag">&gt;</span> id, name, age, email <span class="tag">&lt;/sql&gt;</span>
+<span class="tag">&lt;select</span> id=<span class="str">"findAll"</span> resultType=<span class="str">"User"</span><span class="tag">&gt;</span>
+    SELECT <span class="tag">&lt;include</span> refid=<span class="str">"baseColumns"</span><span class="tag">/&gt;</span> FROM user
+<span class="tag">&lt;/select&gt;</span></pre>
+
+        <h3 id="mybatis-cache">一级缓存与二级缓存</h3>
+        <table>
+          <tr><th>对比项</th><th>一级缓存</th><th>二级缓存</th></tr>
+          <tr><td>作用域</td><td>SqlSession 级别</td><td>Mapper（namespace）级别</td></tr>
+          <tr><td>默认状态</td><td>默认开启</td><td>默认关闭，需手动配置</td></tr>
+          <tr><td>生命周期</td><td>SqlSession 关闭即失效</td><td>跨 SqlSession 共享</td></tr>
+          <tr><td>失效条件</td><td>执行增删改、手动 clearCache()</td><td>执行增删改（整个 namespace 失效）</td></tr>
+          <tr><td>实现原理</td><td>HashMap（BaseExecutor 内部）</td><td>Decorator 模式（CachingExecutor）</td></tr>
+          <tr><td>注意事项</td><td>Spring 中每个请求通常一个 SqlSession，一级缓存作用有限</td><td>分布式环境下容易出现脏数据，生产慎用</td></tr>
+        </table>
+
+        <pre data-lang="xml"><span class="cm">&lt;!-- 开启二级缓存（Mapper.xml 中配置） --&gt;</span>
+<span class="tag">&lt;cache</span>
+    eviction=<span class="str">"LRU"</span>           <span class="cm">&lt;!-- 淘汰策略：LRU/FIFO/SOFT/WEAK --&gt;</span>
+    flushInterval=<span class="str">"60000"</span>    <span class="cm">&lt;!-- 刷新间隔（毫秒） --&gt;</span>
+    size=<span class="str">"1024"</span>              <span class="cm">&lt;!-- 缓存对象数量 --&gt;</span>
+    readOnly=<span class="str">"true"</span>          <span class="cm">&lt;!-- 只读，返回同一引用（性能好） --&gt;</span>
+<span class="tag">/&gt;</span></pre>
+
+        <div class="info-box warning">
+          <strong>⚠️ 生产环境建议</strong>
+          分布式环境下 MyBatis 二级缓存容易导致脏数据（各节点缓存不一致），生产环境推荐使用 Redis 作为缓存层，禁用 MyBatis 二级缓存。
+        </div>
+
+        <h3 id="mybatis-plugin">插件机制（Interceptor）</h3>
+        <p>MyBatis 允许在四大对象的调用链路上插入自定义逻辑（AOP 思想）：</p>
+        <ul>
+          <li><strong>Executor</strong>：执行器（query、update、commit 等）</li>
+          <li><strong>StatementHandler</strong>：Statement 处理器（prepare、parameterize、batch 等）</li>
+          <li><strong>ParameterHandler</strong>：参数处理器（setParameters）</li>
+          <li><strong>ResultSetHandler</strong>：结果集处理器（handleResultSets）</li>
+        </ul>
+
+        <pre data-lang="java"><span class="cm">// 自定义分页插件示例</span>
+<span class="ann">@Intercepts</span>({
+    <span class="ann">@Signature</span>(type = StatementHandler.<span class="kw">class</span>,
+                method = <span class="str">"prepare"</span>,
+                args = {Connection.<span class="kw">class</span>, Integer.<span class="kw">class</span>})
+})
+<span class="kw">public class</span> <span class="type">PageInterceptor</span> <span class="kw">implements</span> Interceptor {
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> Object intercept(Invocation invocation) <span class="kw">throws</span> Throwable {
+        StatementHandler handler = (StatementHandler) invocation.getTarget();
+        BoundSql boundSql = handler.getBoundSql();
+        String originalSql = boundSql.getSql();
+
+        <span class="cm">// 改写 SQL，添加 LIMIT</span>
+        String pageSql = originalSql + <span class="str">" LIMIT "</span> + offset + <span class="str">", "</span> + pageSize;
+        <span class="cm">// 通过反射替换 SQL</span>
+        Field sqlField = BoundSql.<span class="kw">class</span>.getDeclaredField(<span class="str">"sql"</span>);
+        sqlField.setAccessible(<span class="kw">true</span>);
+        sqlField.set(boundSql, pageSql);
+
+        <span class="kw">return</span> invocation.proceed();
+    }
+
+    <span class="ann">@Override</span>
+    <span class="kw">public</span> Object plugin(Object target) {
+        <span class="kw">return</span> Plugin.wrap(target, <span class="kw">this</span>);
+    }
+}</pre>
+
+        <div class="info-box info">
+          <strong>💡 常见 MyBatis 插件</strong>
+          <ul>
+            <li><strong>PageHelper</strong>：物理分页插件，自动改写 SQL 添加 LIMIT</li>
+            <li><strong>MyBatis-Plus</strong>：增强工具包，提供通用 CRUD、条件构造器、代码生成器</li>
+            <li><strong>tk.mybatis</strong>：通用 Mapper，减少 XML 配置</li>
+            <li><strong>MyBatis Generator</strong>：根据数据库表自动生成 Entity、Mapper、XML</li>
+          </ul>
+        </div>
+
+        <h3 id="mybatis-interview">MyBatis 高频面试题</h3>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MyBatis 中 #{} 和 ${} 的区别？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><code>#{}</code> 使用预编译（PreparedStatement），参数用 <code>?</code> 占位，安全防注入。<code>${}</code> 直接字符串拼接，有 SQL 注入风险。</p>
+            <p><code>#{}</code> 适用于参数值，<code>${}</code> 仅用于动态表名、列名、ORDER BY 等不能用占位符的场景，使用时需做白名单校验。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MyBatis 的一级缓存和二级缓存有什么区别？</span>
+            <span class="difficulty medium">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>一级缓存是 SqlSession 级别，默认开启，同一 SqlSession 内相同查询直接返回缓存结果，执行增删改后自动失效。</p>
+            <p>二级缓存是 Mapper 级别，默认关闭，跨 SqlSession 共享。需在 Mapper.xml 中配置 <code>&lt;cache/&gt;</code>，实体类实现 Serializable。分布式环境下容易出现脏数据，生产推荐用 Redis 替代。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MyBatis 的动态 SQL 有哪些标签？</span>
+            <span class="difficulty easy">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><code>&lt;if&gt;</code>：条件判断</li>
+              <li><code>&lt;where&gt;</code>：自动去除前导 AND/OR</li>
+              <li><code>&lt;set&gt;</code>：UPDATE 时自动去除末尾逗号</li>
+              <li><code>&lt;choose&gt;/&lt;when&gt;/&lt;otherwise&gt;</code>：类似 switch-case</li>
+              <li><code>&lt;foreach&gt;</code>：遍历集合，常用于 IN 查询和批量插入</li>
+              <li><code>&lt;trim&gt;</code>：自定义前缀/后缀的添加和去除</li>
+              <li><code>&lt;sql&gt;/&lt;include&gt;</code>：SQL 片段复用</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MyBatis 的 Mapper 接口工作原理是什么？</span>
+            <span class="difficulty medium">高频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p>MyBatis 启动时为每个 Mapper 接口生成一个 <strong>MapperProxy</strong> 代理对象（JDK 动态代理），存入 <code>Configuration</code> 的 Map 中。</p>
+            <p>调用 Mapper 方法时，MapperProxy 拦截方法调用，根据接口全限定名 + 方法名找到对应的 <code>MappedStatement</code>，然后委托给 SqlSession 执行 SQL。</p>
+            <p>这也是为什么 Mapper 接口不需要实现类的原因——由动态代理在运行时生成。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>MyBatis-Plus 相比原生 MyBatis 有哪些优势？</span>
+            <span class="difficulty medium">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <ul>
+              <li><strong>通用 CRUD</strong>：继承 BaseMapper 即可获得单表增删改查，无需写 XML</li>
+              <li><strong>条件构造器</strong>：LambdaQueryWrapper 链式构建查询条件，类型安全</li>
+              <li><strong>分页插件</strong>：内置 PaginationInnerInterceptor，开箱即用</li>
+              <li><strong>代码生成器</strong>：根据数据库表自动生成 Entity、Mapper、Service、Controller</li>
+              <li><strong>逻辑删除</strong>：配置后自动在 SQL 中添加 deleted 条件</li>
+              <li><strong>自动填充</strong>：createTime、updateTime 等字段自动填充</li>
+              <li><strong>乐观锁</strong>：@Version 注解支持</li>
+            </ul>
+          </div></div>
+        </div>
+      </section>
+
       <footer class="footer">
-        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+        <p>java知识点总结 · 面向 Java 高级开发工程师面试</p>
       </footer>
     </div>
   </main>

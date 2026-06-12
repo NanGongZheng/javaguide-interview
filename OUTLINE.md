@@ -1,4 +1,4 @@
-# ☕ JavaGuide 面试突击 — 项目大纲
+# ☕ java知识点总结 — 项目大纲
 
 > 面向 Java 高级开发工程师面试的知识库网站
 > 仓库：https://github.com/NanGongZheng/javaguide-interview
@@ -18,7 +18,8 @@
 │   ├── spring.html         # Spring 全家桶（IoC/AOP/Boot/MVC/Cloud 12 子章节/事务）
 │   ├── database.html       # MySQL 与 Redis（索引/事务/优化/数据结构/高可用）
 │   ├── distribution.html   # 分布式与系统设计（理论/锁/事务/MQ/设计题/设计模式）
-│   └── interview.html      # 高频面试题精选（50+ 题可展开折叠）
+│   ├── projects.html       # 实战项目（5 个项目 + 技术栈 + 亮点 + 难题 + STAR 模板）
+│   └── interview.html      # 高频面试题精选（60+ 题可展开折叠）
 ├── README.md               # 项目说明
 ├── OUTLINE.md              # 本文件：项目大纲与进度
 └── .gitignore
@@ -30,7 +31,7 @@
 
 | 提交 | 说明 |
 |------|------|
-| `55e6249` | init: JavaGuide 面试突击网站 |
+| `55e6249` | init: java知识点总结网站 |
 | `446eca8` | docs: 添加项目大纲与 TODO 清单 |
 | `7d12c6b` | feat: 大幅扩充 Spring Cloud 内容（新旧对比 + 12 子章节） |
 | `2042072` | feat: 所有页面补全二级目录，支持页面内快速定位 |
@@ -61,7 +62,12 @@
   - [x] 类加载机制与双亲委派模型
 - [x] **Java 8-21 新特性**
   - [x] Lambda 与函数式接口、Stream API、Optional
-  - [x] Record、Sealed Class、Pattern Matching、Virtual Thread
+  - [x] Record、Sealed Class、Text Block、Pattern Matching
+  - [x] **Virtual Thread 虚拟线程**（创建方式、pinning 问题、vs 平台线程对比）
+  - [x] **Structured Concurrency 结构化并发**（ShutdownOnFailure/ShutdownOnSuccess）
+  - [x] **Scoped Values 作用域值**（ThreadLocal 替代方案）
+  - [x] **Sequenced Collections**（统一有序集合 API）
+  - [x] **Pattern Matching for switch**（配合 Sealed Class 穷举检查）
 - [x] **IO 与 NIO**（BIO vs NIO vs AIO、NIO 核心组件、Netty）
 - [x] **反射与注解**（反射原理、注解原理）
 
@@ -102,13 +108,22 @@
 - [x] **经典系统设计** — 秒杀系统、短链接、接口幂等
 - [x] **设计模式** — 单例、策略、模板方法、观察者、SOLID 原则
 
-### 5. 高频面试题精选 (`pages/interview.html`) ✅
+### 5. 实战项目 (`pages/projects.html`) ✅
+
+- [x] **电商秒杀系统** — 高并发秒杀、Redis Lua 原子扣减、MQ 异步下单、多级缓存
+- [x] **即时通讯系统** — Netty WebSocket、消息可靠性三件套、多端同步、已读回执
+- [x] **外卖点餐平台** — 订单状态机、Redis GEO 附近商家、延迟队列、统一支付网关
+- [x] **短链接服务** — Base62 编码、两级缓存、布隆过滤器防穿透、异步统计
+- [x] **企业级权限管理系统** — RBAC 模型、数据权限无侵入、JWT + Redis 黑名单、操作审计
+- [x] **面试技巧** — STAR 法则、项目描述万能公式、常见追问应对
+
+### 6. 高频面试题精选 (`pages/interview.html`) ✅
 
 - [x] **Java 基础题**（6 题）— HashMap、ConcurrentHashMap、synchronized/Lock、volatile、线程池、JVM GC
-- [x] **Spring 题**（5 题）— 自动配置、Bean 生命周期、事务失效、循环依赖、AOP
-- [x] **数据库题**（5 题）— B+ 树、MVCC、慢 SQL、缓存三大问题、Redis/MySQL 一致性
-- [x] **分布式题**（4 题）— 分布式锁、消息可靠性、CAP/BASE、秒杀设计
-- [x] **场景经验题**（4 题）— STAR 法则、CPU 飙高排查、OOM 排查、接口限流
+- [x] **Spring 题**（7 题）— 自动配置、Bean 生命周期、事务失效、循环依赖、AOP、事务传播行为、Boot 自动配置原理
+- [x] **数据库题**（8 题）— B+ 树、MVCC、慢 SQL、缓存三大问题、Redis/MySQL 一致性、主从复制、MyBatis #{} vs ${}、MyBatis 缓存
+- [x] **分布式题**（6 题）— 分布式锁、消息可靠性、CAP/BASE、秒杀设计、分布式 ID 生成、MQ 选型
+- [x] **场景经验题**（6 题）— STAR 法则、CPU 飙高排查、OOM 排查、接口限流、短链接设计、CI/CD 流程
 
 ---
 
@@ -131,6 +146,11 @@
 | 2026-06-13 | 所有页面补全二级目录（页面内 TOC，点击跳转） | ✅ |
 | 2026-06-13 | 右侧浮动目录（固定定位 + 滚动高亮 + 移动端折叠） | ✅ |
 | 2026-06-13 | 一键回到顶部按钮（滚动 300px 后出现） | ✅ |
+| 2026-06-13 | 项目名称改为「java知识点总结」 | ✅ |
+| 2026-06-13 | JDK 21 新特性大幅扩充（Virtual Thread/Structured Concurrency/Scoped Values/Sequenced Collections/Pattern Matching for switch） | ✅ |
+| 2026-06-13 | 新增 MyBatis 深入章节（架构流程/#{} vs ${}/动态 SQL/缓存/插件/面试题） | ✅ |
+| 2026-06-13 | 面试题扩充至 36+ 道（新增 12 道：虚拟线程、String 不可变、abstract vs interface、事务传播、Boot 自动配置、主从复制、MyBatis、分布式 ID、MQ 选型、短链接、CI/CD） | ✅ |
+| 2026-06-13 | 新增「实战项目」页面（5 个项目 + 技术栈 + 亮点 + 难题 + STAR 模板 + 面试技巧） | ✅ |
 
 ---
 
@@ -202,4 +222,5 @@
 | spring.html | 50 KB | 16 | — | 16 |
 | database.html | 18 KB | 6 | 21 | 27 |
 | distribution.html | 21 KB | 6 | 22 | 28 |
-| interview.html | 28 KB | 5 | 24（题目） | 5 |
+| projects.html | 32 KB | 5 | — | 6 |
+| interview.html | 38 KB | 5 | 36（题目） | 5 |

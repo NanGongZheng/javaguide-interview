@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Java 基础与进阶 - JavaGuide 面试突击</title>
+  <title>Java 基础与进阶 - java知识点总结</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
 </head>
@@ -13,7 +13,7 @@
       <button class="menu-toggle" id="menuToggle">☰</button>
       <a href="../index.html" class="logo">
         <span class="logo-icon">J</span>
-        <span>JavaGuide 面试突击</span>
+        <span>java知识点总结</span>
       </a>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
@@ -46,6 +46,10 @@
     <div class="sidebar-section">
       <div class="sidebar-title">分布式与架构</div>
       <a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">实战项目</div>
+      <a href="projects.html" class="sidebar-link"><span class="icon">🚀</span>实战项目</a>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-title">面试专区</div>
@@ -104,6 +108,11 @@
             <ul class="toc-sub">
               <li><a href="#java8-features">Java 8 核心特性</a></li>
               <li><a href="#java17-features">Java 17+ 新特性</a></li>
+              <li><a href="#jdk21-virtual-thread">Virtual Thread 虚拟线程</a></li>
+              <li><a href="#jdk21-structured">Structured Concurrency</a></li>
+              <li><a href="#jdk21-scoped">Scoped Values</a></li>
+              <li><a href="#jdk21-sequenced">Sequenced Collections</a></li>
+              <li><a href="#jdk21-pattern-switch">Pattern Matching for switch</a></li>
             </ul>
           </li>
           <li>
@@ -448,32 +457,221 @@ String name = Optional.ofNullable(user)
         <ul>
           <li><strong>Record（Java 14+）</strong>：不可变数据类，自动生成 equals/hashCode/toString</li>
           <li><strong>Sealed Class（Java 17）</strong>：限制哪些类可以继承</li>
-          <li><strong>Pattern Matching（Java 17+）</strong>：instanceof 模式匹配</li>
           <li><strong>Text Block（Java 15）</strong>：多行字符串 <code>"""..."""</code></li>
-          <li><strong>Virtual Thread（Java 21）</strong>：虚拟线程，高并发场景下大幅减少线程开销</li>
+          <li><strong>instanceof Pattern Matching（Java 16+）</strong>：模式匹配，消除强制类型转换</li>
         </ul>
 
-        <pre data-lang="java"><span class="cm">// Record - 不可变数据类</span>
-<span class="kw">public record</span> <span class="type">Point</span>(<span class="kw">int</span> x, <span class="kw">int</span> y) {}
-
-<span class="cm">// Sealed Class - 限制继承</span>
-<span class="kw">public sealed class</span> <span class="type">Shape</span> <span class="kw">permits</span> Circle, Rectangle, Triangle {}
-
-<span class="cm">// Pattern Matching</span>
-<span class="kw">if</span> (obj <span class="kw">instanceof</span> String s && s.length() &gt; 5) {
-    System.out.println(s.toUpperCase());
+        <pre data-lang="java"><span class="cm">// Record - 不可变数据类，自动生成构造器、getter、equals、hashCode、toString</span>
+<span class="kw">public record</span> <span class="type">Point</span>(<span class="kw">int</span> x, <span class="kw">int</span> y) {
+    <span class="cm">// 可以添加紧凑构造器做校验</span>
+    <span class="kw">public</span> Point {
+        <span class="kw">if</span> (x &lt; 0 || y &lt; 0) <span class="kw">throw new</span> IllegalArgumentException(<span class="str">"坐标不能为负"</span>);
+    }
 }
 
-<span class="cm">// Virtual Thread（Java 21）</span>
+<span class="cm">// Sealed Class - 限制哪些类可以继承</span>
+<span class="kw">public sealed class</span> <span class="type">Shape</span> <span class="kw">permits</span> Circle, Rectangle, Triangle {}
+<span class="kw">public final class</span> <span class="type">Circle</span> <span class="kw">extends</span> Shape {}    <span class="cm">// final：不能再被继承</span>
+<span class="kw">public non-sealed class</span> <span class="type">Rectangle</span> <span class="kw">extends</span> Shape {} <span class="cm">// non-sealed：放开限制</span>
+
+<span class="cm">// Text Block - 多行字符串</span>
+String json = <span class="str">"""
+        {
+            "name": "张三",
+            "age": 25
+        }
+        """</span>;
+
+<span class="cm">// instanceof Pattern Matching</span>
+<span class="kw">if</span> (obj <span class="kw">instanceof</span> String s && s.length() &gt; 5) {
+    System.out.println(s.toUpperCase()); <span class="cm">// 直接使用 s，无需强转</span>
+}</pre>
+
+        <h3 id="jdk21-virtual-thread">Virtual Thread 虚拟线程（Java 21 LTS）</h3>
+        <p>虚拟线程是 JDK 21 正式发布的最重要特性。它是由 JVM 调度的轻量级线程，不绑定操作系统线程，可以轻松创建数百万个虚拟线程。</p>
+
+        <h4>平台线程 vs 虚拟线程</h4>
+        <table>
+          <tr><th>对比项</th><th>平台线程（Platform Thread）</th><th>虚拟线程（Virtual Thread）</th></tr>
+          <tr><td>实现</td><td>1:1 映射 OS 线程</td><td>M:N 映射，由 ForkJoinPool 调度</td></tr>
+          <tr><td>内存开销</td><td>每个线程 ~1MB 栈空间</td><td>每个虚拟线程 ~几KB</td></tr>
+          <tr><td>创建数量</td><td>通常数千个</td><td>可创建数百万个</td></tr>
+          <tr><td>适用场景</td><td>计算密集型</td><td>IO 密集型（HTTP、数据库、文件）</td></tr>
+          <tr><td>上下文切换</td><td>OS 内核态切换，开销大</td><td>JVM 用户态切换，开销极小</td></tr>
+        </table>
+
+        <h4>创建方式</h4>
+        <pre data-lang="java"><span class="cm">// 方式一：直接创建</span>
+Thread vt = Thread.ofVirtual().name(<span class="str">"my-vt"</span>).start(() -&gt; {
+    System.out.println(<span class="str">"Hello from virtual thread: "</span> + Thread.currentThread());
+});
+
+<span class="cm">// 方式二：虚拟线程 ExecutorService（推荐）</span>
 <span class="kw">try</span> (<span class="kw">var</span> executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    <span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 10000; i++) {
+    <span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 100_000; i++) {
         executor.submit(() -&gt; {
-            <span class="cm">// 每个任务一个虚拟线程，开销极低</span>
+            <span class="cm">// 模拟 IO 操作，虚拟线程会自动 unmount 平台线程</span>
             Thread.sleep(Duration.ofSeconds(1));
-            <span class="kw">return</span> <span class="str">"done"</span>;
+            System.out.println(<span class="str">"Done: "</span> + Thread.currentThread());
         });
     }
+} <span class="cm">// 自动关闭，等待所有任务完成</span>
+
+<span class="cm">// 方式三：Spring Boot 3.x 配置启用虚拟线程</span>
+<span class="cm"># application.yml</span>
+<span class="cm"># spring.threads.virtual.enabled: true</span></pre>
+
+        <div class="info-box warning">
+          <strong>⚠️ 面试高频：虚拟线程注意事项</strong>
+          <ul>
+            <li><strong>不要池化虚拟线程</strong>：每个任务创建一个虚拟线程，不要用线程池复用</li>
+            <li><strong>避免 synchronized 持有锁时做阻塞 IO</strong>：会导致 pinning（虚拟线程被固定到平台线程），改用 <code>ReentrantLock</code></li>
+            <li><strong>CPU 密集型任务不适合</strong>：虚拟线程的优势在于 IO 等待时释放平台线程</li>
+            <li><strong>ThreadLocal 仍可使用但需谨慎</strong>：百万虚拟线程 + ThreadLocal = 巨大内存开销，建议用 Scoped Values 替代</li>
+          </ul>
+        </div>
+
+        <pre data-lang="java"><span class="cm">// ❌ 错误：synchronized 内阻塞会导致 pinning</span>
+<span class="kw">synchronized</span> (lock) {
+    httpClient.send(request, body); <span class="cm">// 虚拟线程被固定，无法释放平台线程</span>
+}
+
+<span class="cm">// ✅ 正确：用 ReentrantLock 替代</span>
+reentrantLock.lock();
+<span class="kw">try</span> {
+    httpClient.send(request, body); <span class="cm">// 虚拟线程可以 unmount</span>
+} <span class="kw">finally</span> {
+    reentrantLock.unlock();
+}
+
+<span class="cm">// ✅ JVM 参数检测 pinning（开发环境使用）</span>
+<span class="cm">// -Djdk.tracePinnedThreads=full</span></pre>
+
+        <h3 id="jdk21-structured">Structured Concurrency（结构化并发，Preview）</h3>
+        <p>结构化并发将多线程任务组织为有层级的任务树，父任务等待所有子任务完成后再继续。解决了 <code>ExecutorService</code> 缺乏结构化管理的问题。</p>
+
+        <pre data-lang="java"><span class="cm">// 传统方式：任务之间无结构关系，容易泄漏</span>
+<span class="kw">var</span> executor = Executors.newCachedThreadPool();
+Future&lt;User&gt; userFuture = executor.submit(() -&gt; findUser(id));
+Future&lt;Order&gt; orderFuture = executor.submit(() -&gt; fetchOrder(id));
+<span class="cm">// 如果 findUser 抛异常，fetchOrder 仍在后台运行（泄漏）</span>
+
+<span class="cm">// 结构化并发：自动管理子任务生命周期</span>
+<span class="kw">try</span> (<span class="kw">var</span> scope = <span class="kw">new</span> StructuredTaskScope.ShutdownOnFailure()) {
+    Subtask&lt;User&gt; userTask = scope.fork(() -&gt; findUser(id));
+    Subtask&lt;Order&gt; orderTask = scope.fork(() -&gt; fetchOrder(id));
+
+    scope.join();            <span class="cm">// 等待所有子任务完成</span>
+    scope.throwIfFailed();   <span class="cm">// 任一失败则抛出异常，自动取消其他任务</span>
+
+    <span class="kw">return new</span> UserOrder(userTask.get(), orderTask.get());
 }</pre>
+
+        <div class="info-box info">
+          <strong>💡 ShutdownOnFailure vs ShutdownOnSuccess</strong>
+          <ul>
+            <li><code>ShutdownOnFailure</code>：任一子任务失败时取消所有其他任务（适合需要全部成功的场景）</li>
+            <li><code>ShutdownOnSuccess</code>：任一子任务成功时取消其余任务（适合竞速场景，如多数据源取最快）</li>
+          </ul>
+        </div>
+
+        <h3 id="jdk21-scoped">Scoped Values（作用域值，Preview）</h3>
+        <p>Scoped Values 是 ThreadLocal 的替代方案，专为虚拟线程设计。它不可变、自动清理、无内存泄漏风险。</p>
+
+        <pre data-lang="java"><span class="cm">// 定义 Scoped Value</span>
+<span class="kw">private static final</span> ScopedValue&lt;String&gt; CURRENT_USER = ScopedValue.newInstance();
+
+<span class="cm">// 在作用域内绑定值</span>
+ScopedValue.runWhere(CURRENT_USER, <span class="str">"张三"</span>, () -&gt; {
+    handleRequest(); <span class="cm">// 整个调用链都可以读取 CURRENT_USER</span>
+});
+
+<span class="cm">// 读取值</span>
+<span class="kw">void</span> handleRequest() {
+    String user = CURRENT_USER.get(); <span class="cm">// "张三"</span>
+    <span class="cm">// 如果在作用域外调用 get()，抛出 NoSuchElementException</span>
+}</pre>
+
+        <h4>ThreadLocal vs Scoped Values 对比</h4>
+        <table>
+          <tr><th>对比项</th><th>ThreadLocal</th><th>Scoped Values</th></tr>
+          <tr><td>可变性</td><td>可变（set/get/remove）</td><td>不可变（绑定后只读）</td></tr>
+          <tr><td>生命周期</td><td>手动 remove，否则泄漏</td><td>作用域结束自动清理</td></tr>
+          <tr><td>虚拟线程</td><td>百万虚拟线程 = 巨大开销</td><td>高效共享，无额外开销</td></tr>
+          <tr><td>继承</td><td>子线程可继承（InheritableThreadLocal）</td><td>自动继承，不可变保证安全</td></tr>
+          <tr><td>状态</td><td>Preview（JDK 21）</td><td>Preview（JDK 21）</td></tr>
+        </table>
+
+        <h3 id="jdk21-sequenced">Sequenced Collections（有序集合，Java 21）</h3>
+        <p>JDK 21 引入了 <code>SequencedCollection</code>、<code>SequencedSet</code>、<code>SequencedMap</code> 接口，统一了有序集合的操作方式。</p>
+
+        <pre data-lang="java"><span class="cm">// 新增的统一接口方法</span>
+<span class="kw">interface</span> SequencedCollection&lt;E&gt; <span class="kw">extends</span> Collection&lt;E&gt; {
+    <span class="kw">void</span> addFirst(E e);       <span class="cm">// 头部插入</span>
+    <span class="kw">void</span> addLast(E e);        <span class="cm">// 尾部插入</span>
+    E getFirst();              <span class="cm">// 获取第一个元素</span>
+    E getLast();               <span class="cm">// 获取最后一个元素</span>
+    E removeFirst();           <span class="cm">// 移除第一个</span>
+    E removeLast();            <span class="cm">// 移除最后一个</span>
+    SequencedCollection&lt;E&gt; reversed(); <span class="cm">// 返回反转视图</span>
+}
+
+<span class="cm">// 使用示例</span>
+List&lt;String&gt; list = <span class="kw">new</span> ArrayList&lt;&gt;(List.of(<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>));
+list.addFirst(<span class="str">"Z"</span>);        <span class="cm">// [Z, A, B, C]</span>
+list.addLast(<span class="str">"D"</span>);         <span class="cm">// [Z, A, B, C, D]</span>
+String first = list.getFirst(); <span class="cm">// "Z"</span>
+
+<span class="cm">// TreeMap 也支持</span>
+TreeMap&lt;Integer, String&gt; map = <span class="kw">new</span> TreeMap&lt;&gt;();
+map.put(1, <span class="str">"一"</span>); map.put(2, <span class="str">"二"</span>); map.put(3, <span class="str">"三"</span>);
+Map.Entry&lt;Integer, String&gt; first = map.firstEntry(); <span class="cm">// 1=一</span>
+Map.Entry&lt;Integer, String&gt; last = map.lastEntry();   <span class="cm">// 3=三</span>
+SequencedMap&lt;Integer, String&gt; reversed = map.reversed(); <span class="cm">// 反转视图</span></pre>
+
+        <h3 id="jdk21-pattern-switch">Pattern Matching for switch（Preview）</h3>
+        <p>扩展 switch 表达式支持模式匹配，消除冗长的 if-else instanceof 链。</p>
+
+        <pre data-lang="java"><span class="cm">// 传统方式：冗长的 instanceof 链</span>
+<span class="kw">if</span> (obj <span class="kw">instanceof</span> Integer i) {
+    System.out.println(<span class="str">"整数: "</span> + i);
+} <span class="kw">else if</span> (obj <span class="kw">instanceof</span> String s && s.length() &gt; 0) {
+    System.out.println(<span class="str">"非空字符串: "</span> + s);
+} <span class="kw">else if</span> (obj <span class="kw">instanceof</span> List&lt;?&gt; list && list.size() &gt; 3) {
+    System.out.println(<span class="str">"大列表: "</span> + list.size());
+}
+
+<span class="cm">// Pattern Matching for switch（JDK 21 Preview）</span>
+<span class="kw">switch</span> (obj) {
+    <span class="kw">case</span> Integer i                    -&gt; System.out.println(<span class="str">"整数: "</span> + i);
+    <span class="kw">case</span> String s <span class="kw">when</span> s.length() &gt; 0 -&gt; System.out.println(<span class="str">"非空字符串: "</span> + s);
+    <span class="kw">case</span> List&lt;?&gt; l <span class="kw">when</span> l.size() &gt; 3 -&gt; System.out.println(<span class="str">"大列表: "</span> + l.size());
+    <span class="kw">case null</span>                         -&gt; System.out.println(<span class="str">"null"</span>);
+    <span class="kw">default</span>                           -&gt; System.out.println(<span class="str">"其他"</span>);
+}
+
+<span class="cm">// 配合 Sealed Class 实现穷举检查</span>
+<span class="kw">sealed interface</span> <span class="type">Shape</span> <span class="kw">permits</span> Circle, Rectangle {}
+<span class="kw">record</span> <span class="type">Circle</span>(<span class="kw">double</span> radius) <span class="kw">implements</span> Shape {}
+<span class="kw">record</span> <span class="type">Rectangle</span>(<span class="kw">double</span> w, <span class="kw">double</span> h) <span class="kw">implements</span> Shape {}
+
+<span class="cm">// 编译器知道 Shape 只有 Circle 和 Rectangle，无需 default</span>
+<span class="kw">double</span> area = <span class="kw">switch</span> (shape) {
+    <span class="kw">case</span> Circle c    -&gt; Math.PI * c.radius() * c.radius();
+    <span class="kw">case</span> Rectangle r -&gt; r.w() * r.h();
+};</pre>
+
+        <div class="info-box info">
+          <strong>💡 JDK 21 LTS 面试要点速查</strong>
+          <ul>
+            <li>虚拟线程：IO 密集型场景性能提升巨大，是 Java 对抗 Go goroutine 的核心武器</li>
+            <li>结构化并发：解决并发任务的生命周期管理问题，避免线程泄漏</li>
+            <li>Scoped Values：ThreadLocal 的安全替代，专为虚拟线程设计</li>
+            <li>Sequenced Collections：统一了有序集合的操作 API</li>
+            <li>Pattern Matching for switch：消除 instanceof 链，配合 Sealed Class 实现穷举</li>
+            <li>Spring Boot 3.2+ 已原生支持虚拟线程，只需一行配置</li>
+          </ul>
+        </div>
       </section>
 
       <!-- ==================== IO ==================== -->
@@ -532,7 +730,7 @@ method.invoke(obj, <span class="str">"张三"</span>);</pre>
       </section>
 
       <footer class="footer">
-        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+        <p>java知识点总结 · 面向 Java 高级开发工程师面试</p>
       </footer>
     </div>
   </main>

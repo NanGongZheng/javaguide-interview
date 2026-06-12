@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实战项目 - java知识点总结</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>java知识点总结</span></a>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      <a href="https://github.com" class="github-link" target="_blank" title="GitHub">⭐</a>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section"><div class="sidebar-title">导航</div><a href="../index.html" class="sidebar-link"><span class="icon">🏠</span>首页</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">Java 核心</div><a href="java-core.html" class="sidebar-link"><span class="icon">☕</span>Java 基础与进阶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">框架与生态</div><a href="spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">数据库</div><a href="database.html" class="sidebar-link"><span class="icon">🗄️</span>MySQL 与 Redis</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">分布式与架构</div><a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">实战项目</div><a href="projects.html" class="sidebar-link active"><span class="icon">🚀</span>实战项目</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">面试专区</div><a href="interview.html" class="sidebar-link"><span class="icon">🎯</span>高频面试题精选</a></div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <div class="content">
+      <div class="breadcrumb"><a href="../index.html">首页</a> <span>/</span> <span>实战项目</span></div>
+
+      <div class="page-header">
+        <h1>🚀 实战项目</h1>
+        <p class="subtitle">精选 5 个 Java 后端高频面试项目，涵盖技术栈选型、项目亮点提炼、难题排查思路，以及 STAR 法则描述模板，助你在面试中讲好项目故事。</p>
+      </div>
+
+      <div class="toc">
+        <h4>📑 目录</h4>
+        <ul class="toc-list">
+          <li><a href="#project-seckill">🛒 电商秒杀系统</a></li>
+          <li><a href="#project-im">💬 即时通讯系统</a></li>
+          <li><a href="#project-takeout">🍱 外卖点餐平台</a></li>
+          <li><a href="#project-shortlink">🔗 短链接服务</a></li>
+          <li><a href="#project-rbac">🔐 企业级权限管理系统</a></li>
+        </ul>
+      </div>
+
+      <!-- ==================== 电商秒杀系统 ==================== -->
+      <section class="knowledge-section" id="project-seckill">
+        <h2>🛒 电商秒杀系统</h2>
+
+        <h3>项目简介</h3>
+        <p>面向大促场景的高并发秒杀系统，支持商品秒杀、限时抢购、优惠券发放等场景。系统需在极短时间内承受数十万级并发请求，同时保证库存准确性和数据一致性。</p>
+
+        <h3>技术栈</h3>
+        <table>
+          <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+          <tr><td>前端</td><td>Vue 3 + Axios</td><td>按钮防重、倒计时、动态 URL</td></tr>
+          <tr><td>网关</td><td>Spring Cloud Gateway</td><td>限流、鉴权、请求路由</td></tr>
+          <tr><td>服务层</td><td>Spring Boot 3 + MyBatis-Plus</td><td>业务逻辑、库存扣减</td></tr>
+          <tr><td>缓存</td><td>Redis + Lua 脚本</td><td>库存预热、原子扣减、分布式锁</td></tr>
+          <tr><td>消息队列</td><td>RocketMQ</td><td>异步下单、削峰填谷</td></tr>
+          <tr><td>数据库</td><td>MySQL 8 + 分库分表（ShardingSphere）</td><td>订单分表、乐观锁防超卖</td></tr>
+          <tr><td>限流</td><td>Sentinel</td><td>接口限流、熔断降级</td></tr>
+          <tr><td>部署</td><td>Docker + K8s</td><td>弹性扩缩容</td></tr>
+        </table>
+
+        <h3>项目亮点</h3>
+        <ul>
+          <li><strong>多级缓存架构</strong>：本地缓存（Caffeine）+ Redis 缓存 + 数据库，QPS 从 500 提升至 8000+</li>
+          <li><strong>Redis + Lua 原子扣减</strong>：库存预热到 Redis，通过 Lua 脚本保证"判断 + 扣减"的原子性，避免超卖</li>
+          <li><strong>异步下单</strong>：秒杀请求只做 Redis 扣减，通过 RocketMQ 异步创建订单，削峰填谷</li>
+          <li><strong>多层限流防护</strong>：前端按钮置灰 → Gateway 令牌桶限流 → Sentinel 接口限流 → Redis 用户级限流</li>
+          <li><strong>库存售罄标记</strong>：Redis 内存标记售罄后，后续请求直接返回，不再访问 Redis</li>
+        </ul>
+
+        <h3>难题与解决方案</h3>
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题一：高并发下库存超卖问题</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>使用 <code>GET + SET</code> 判断库存并扣减时，并发请求可能导致超卖。</p>
+            <p><strong>解决方案：</strong></p>
+            <pre data-lang="lua"><span class="cm">-- Redis Lua 脚本：原子判断 + 扣减</span>
+<span class="kw">local</span> stock = redis.call(<span class="str">'get'</span>, KEYS[1])
+<span class="kw">if not</span> stock <span class="kw">or</span> tonumber(stock) &lt;= 0 <span class="kw">then</span>
+    <span class="kw">return</span> -1  <span class="cm">-- 库存不足</span>
+<span class="kw">end</span>
+redis.call(<span class="str">'decr'</span>, KEYS[1])
+<span class="kw">return</span> 1  <span class="cm">-- 扣减成功</span></pre>
+            <p>配合数据库乐观锁兜底：<code>UPDATE stock SET count = count - 1 WHERE id = ? AND count > 0</code></p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题二：秒杀结束后大量无效请求涌入</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>商品售罄后仍有大量请求到达 Redis，浪费资源。</p>
+            <p><strong>解决方案：</strong>引入<strong>内存标记</strong>机制——用一个 <code>ConcurrentHashMap&lt;Long, Boolean&gt;</code> 标记售罄商品，请求先查内存标记，命中则直接返回"已售罄"，不再访问 Redis。售罄时设置标记并设置 Redis Key 过期时间。</p>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题三：消息丢失导致订单未创建</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>Redis 扣减成功后，MQ 消息丢失导致订单未创建，但库存已扣。</p>
+            <p><strong>解决方案：</strong>采用 RocketMQ <strong>事务消息</strong>机制：</p>
+            <ol>
+              <li>发送 Half 消息（预消息）</li>
+              <li>执行本地事务（创建订单记录到"事务日志表"）</li>
+              <li>本地事务成功 → Commit，MQ 投递消息给消费者</li>
+              <li>本地事务失败 → Rollback，库存回补</li>
+              <li>MQ 定时回查未确认的 Half 消息，检查事务日志表决定 Commit 或 Rollback</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <h3>面试 STAR 描述模板</h3>
+        <div class="info-box info">
+          <strong>💡 STAR 法则</strong>
+          <ul>
+            <li><strong>S（背景）</strong>：公司大促活动需要支撑 10 万级并发秒杀，原有系统 QPS 仅 500</li>
+            <li><strong>T（任务）</strong>：负责秒杀核心链路设计与开发，目标 QPS > 5000，零超卖</li>
+            <li><strong>A（行动）</strong>：设计多级缓存 + Redis Lua 原子扣减 + MQ 异步下单 + 多层限流防护</li>
+            <li><strong>R（结果）</strong>：大促期间 QPS 峰值 8000+，零超卖，P99 延迟 &lt; 200ms，系统零故障</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ==================== 即时通讯系统 ==================== -->
+      <section class="knowledge-section" id="project-im">
+        <h2>💬 即时通讯系统</h2>
+
+        <h3>项目简介</h3>
+        <p>企业级 IM 即时通讯系统，支持单聊、群聊、已读回执、消息漫游、文件传输等功能。类似企业微信/飞书的核心通讯能力。</p>
+
+        <h3>技术栈</h3>
+        <table>
+          <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+          <tr><td>通信协议</td><td>WebSocket（Netty 实现）</td><td>全双工实时通信</td></tr>
+          <tr><td>服务层</td><td>Spring Boot + MyBatis-Plus</td><td>用户管理、群组管理</td></tr>
+          <tr><td>消息存储</td><td>MySQL + MongoDB</td><td>关系数据 + 聊天消息（文档型）</td></tr>
+          <tr><td>缓存</td><td>Redis</td><td>在线状态、会话列表、未读数</td></tr>
+          <tr><td>文件存储</td><td>MinIO / 阿里云 OSS</td><td>图片、文件、语音消息</td></tr>
+          <tr><td>消息推送</td><td>RocketMQ</td><td>离线消息推送、消息同步</td></tr>
+          <tr><td>搜索</td><td>Elasticsearch</td><td>聊天记录全文检索</td></tr>
+        </table>
+
+        <h3>项目亮点</h3>
+        <ul>
+          <li><strong>Netty 长连接管理</strong>：基于 Netty 实现 WebSocket 服务端，单机支撑 10 万+ 长连接，心跳检测 + 自动重连</li>
+          <li><strong>消息可靠性三件套</strong>：ACK 确认机制 + 消息重试 + 消息去重（幂等 ID），保证消息不丢不重</li>
+          <li><strong>消息有序性</strong>：使用 Snowflake 算法生成全局有序消息 ID，配合 SequenceId 保证会话内消息有序</li>
+          <li><strong>多端同步</strong>：用户在 PC/手机/iPad 同时在线，消息通过"同步序列号"机制多端同步</li>
+          <li><strong>已读回执</strong>：Redis Bitmap 记录群消息已读状态，O(1) 查询某条消息的已读人数</li>
+        </ul>
+
+        <h3>难题与解决方案</h3>
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题一：百万长连接下的内存与性能瓶颈</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>单机 Netty 连接数增长后，内存占用飙升，GC 频繁。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>内存池化</strong>：使用 Netty 的 PooledByteBufAllocator，减少 GC 压力</li>
+              <li><strong>零拷贝</strong>：文件传输使用 FileRegion，避免用户态拷贝</li>
+              <li><strong>连接分桶</strong>：按用户 ID 哈希分配到不同的 EventLoopGroup，避免单线程过载</li>
+              <li><strong>心跳优化</strong>：空闲连接检测（IdleStateHandler），超时自动断开，释放资源</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题二：离线用户消息如何不丢失</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>用户离线期间收到的消息，上线后需要完整获取。</p>
+            <p><strong>解决方案：</strong></p>
+            <ol>
+              <li>为每个用户维护一个 <strong>收件箱（Inbox）</strong>，记录最新已同步的消息序列号 <code>syncSeq</code></li>
+              <li>消息发送时同时写入"消息表"和"收件箱表"</li>
+              <li>用户上线时，用本地最大 <code>syncSeq</code> 向服务端拉取增量消息</li>
+              <li>离线消息暂存 MongoDB，按会话分片，支持海量存储</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <h3>面试 STAR 描述模板</h3>
+        <div class="info-box info">
+          <strong>💡 STAR 法则</strong>
+          <ul>
+            <li><strong>S（背景）</strong>：公司需要自建 IM 系统替代第三方 SDK，降低长期成本并满足数据合规要求</li>
+            <li><strong>T（任务）</strong>：负责 IM 核心通信层设计，支撑 50 万在线用户、消息秒级送达</li>
+            <li><strong>A（行动）</strong>：基于 Netty 构建 WebSocket 长连接服务，设计 ACK + 重试 + 去重三件套保证消息可靠性，Redis Bitmap 实现已读回执</li>
+            <li><strong>R（结果）</strong>：单机 10 万长连接，消息送达率 99.99%，已读回执查询 P99 &lt; 10ms</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ==================== 外卖点餐平台 ==================== -->
+      <section class="knowledge-section" id="project-takeout">
+        <h2>🍱 外卖点餐平台</h2>
+
+        <h3>项目简介</h3>
+        <p>类似美团外卖的在线点餐平台，涵盖用户端（浏览商家、下单、支付）、商家端（接单、出餐）、骑手端（接单、配送）三端。核心挑战是订单状态机和高并发下的数据一致性。</p>
+
+        <h3>技术栈</h3>
+        <table>
+          <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+          <tr><td>前端</td><td>微信小程序 + Vue 3 管理端</td><td>用户端小程序 + 商家/骑手管理后台</td></tr>
+          <tr><td>网关</td><td>Spring Cloud Gateway</td><td>路由、鉴权、限流</td></tr>
+          <tr><td>服务层</td><td>Spring Boot 3 + MyBatis-Plus</td><td>用户服务、商家服务、订单服务、配送服务</td></tr>
+          <tr><td>注册/配置</td><td>Nacos</td><td>服务注册发现 + 动态配置</td></tr>
+          <tr><td>数据库</td><td>MySQL（分库分表）</td><td>订单表按 user_id 分片</td></tr>
+          <tr><td>缓存</td><td>Redis Cluster</td><td>商家列表缓存、购物车、地理位置（GEO）</td></tr>
+          <tr><td>消息队列</td><td>RocketMQ</td><td>订单超时取消、商家通知</td></tr>
+          <tr><td>地图服务</td><td>高德地图 API</td><td>距离计算、配送路线规划</td></tr>
+          <tr><td>支付</td><td>微信支付 + 支付宝</td><td>统一支付网关封装</td></tr>
+        </table>
+
+        <h3>项目亮点</h3>
+        <ul>
+          <li><strong>订单状态机</strong>：使用 Spring StateMachine 实现订单状态流转（待支付→已支付→商家接单→出餐中→配送中→已完成），每一步都有严格的状态校验和事件驱动</li>
+          <li><strong>Redis GEO 附近商家</strong>：利用 Redis GEO 命令实现"附近 3 公里商家"查询，GEOSEARCH 性能优于数据库经纬度范围查询</li>
+          <li><strong>延迟队列自动取消</strong>：用户下单未支付，30 分钟后通过 RocketMQ 延迟消息自动取消订单并释放库存</li>
+          <li><strong>购物车设计</strong>：Redis Hash 存储购物车（key 为 userId，field 为 skuId），支持商品规格、数量修改</li>
+          <li><strong>统一支付网关</strong>：封装微信/支付宝支付接口，统一回调处理，支付结果通过 MQ 幂等消费</li>
+        </ul>
+
+        <h3>难题与解决方案</h3>
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题一：订单状态流转的并发安全问题</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>用户取消和商家接单可能同时发生，导致状态混乱。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>乐观锁</strong>：更新订单时带状态条件 <code>UPDATE orders SET status = ? WHERE id = ? AND status = ?</code>，影响行数为 0 则说明状态已变更</li>
+              <li><strong>状态机校验</strong>：每次状态变更前校验"当前状态 → 目标状态"是否合法，非法转换直接拒绝</li>
+              <li><strong>分布式锁兜底</strong>：关键操作（如支付回调）加 Redis 分布式锁，防止重复处理</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题二：高峰时段商家接单延迟</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>午高峰大量订单涌入，商家端 WebSocket 推送延迟严重。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>消息分级</strong>：新订单用"高优先级队列"单独处理，与普通消息隔离</li>
+              <li><strong>本地缓存 + 增量推送</strong>：商家端维护本地订单列表，WebSocket 只推送增量变更（订单 ID + 状态）</li>
+              <li><strong>降级方案</strong>：WebSocket 不可用时自动降级为轮询（每 5 秒 HTTP 拉取）</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <h3>面试 STAR 描述模板</h3>
+        <div class="info-box info">
+          <strong>💡 STAR 法则</strong>
+          <ul>
+            <li><strong>S（背景）</strong>：公司拓展外卖业务，需要从零搭建点餐平台</li>
+            <li><strong>T（任务）</strong>：负责订单核心模块，覆盖下单、支付、状态流转、超时取消全流程</li>
+            <li><strong>A（行动）</strong>：设计状态机驱动的订单系统，Redis GEO 实现附近商家，RocketMQ 延迟消息实现超时取消</li>
+            <li><strong>R（结果）</strong>：日均订单 5 万+，午高峰 QPS 2000+，订单状态零异常，用户投诉率降低 60%</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ==================== 短链接服务 ==================== -->
+      <section class="knowledge-section" id="project-shortlink">
+        <h2>🔗 短链接服务</h2>
+
+        <h3>项目简介</h3>
+        <p>高性能短链接生成与跳转服务，类似 bit.ly / t.cn。支持短链生成、302 跳转、访问统计、自定义短码、过期管理等功能。核心挑战是高并发跳转下的低延迟和海量数据存储。</p>
+
+        <h3>技术栈</h3>
+        <table>
+          <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+          <tr><td>服务层</td><td>Spring Boot 3 + MyBatis-Plus</td><td>短链生成、跳转、统计</td></tr>
+          <tr><td>缓存</td><td>Redis Cluster + 本地缓存（Caffeine）</td><td>热点短链两级缓存</td></tr>
+          <tr><td>数据库</td><td>MySQL + ShardingSphere</td><td>短链映射表按短码哈希分片</td></tr>
+          <tr><td>ID 生成</td><td>雪花算法（自研）</td><td>全局唯一、趋势递增的 ID</td></tr>
+          <tr><td>监控</td><td>Prometheus + Grafana</td><td>跳转 QPS、缓存命中率监控</td></tr>
+          <tr><td>消息队列</td><td>Kafka</td><td>访问日志异步采集</td></tr>
+        </table>
+
+        <h3>项目亮点</h3>
+        <ul>
+          <li><strong>Base62 编码方案</strong>：自增 ID + Base62 编码生成 6~8 位短码，6 位可表示 568 亿种组合，碰撞概率极低</li>
+          <li><strong>两级缓存架构</strong>：Caffeine 本地缓存（容量 10 万，TTL 5 分钟）+ Redis 缓存，缓存命中率 99.5%+</li>
+          <li><strong>布隆过滤器防穿透</strong>：使用 Redis Bloom 过滤不存在的短码，避免缓存穿透打到数据库</li>
+          <li><strong>异步统计</strong>：访问日志写入 Kafka，Flink 实时聚合统计（PV/UV/地域分布），不影响跳转性能</li>
+          <li><strong>短码回收</strong>：过期短码不立即删除，进入"冷却池"一段时间后回收复用，避免短码资源浪费</li>
+        </ul>
+
+        <h3>难题与解决方案</h3>
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题一：缓存穿透导致数据库压力飙升</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>恶意用户大量请求不存在的短码，请求穿透到数据库。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>布隆过滤器</strong>：启动时加载所有有效短码到 Redis Bloom，请求先过布隆过滤器，不存在直接返回 404</li>
+              <li><strong>空值缓存</strong>：查询不存在的短码也缓存空值（TTL 60 秒），防止短时间内重复穿透</li>
+              <li><strong>限流</strong>：同一 IP 每秒最多 100 次请求，超限返回 429</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题二：分布式环境下短码生成冲突</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>多实例同时生成短码，ID 冲突导致短码重复。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>雪花算法</strong>：每个实例分配唯一 WorkerId，生成的 ID 全局唯一且趋势递增</li>
+              <li><strong>号段模式兜底</strong>：引入 Leaf 号段模式，从数据库预取号段到本地，减少 DB 依赖</li>
+              <li><strong>冲突检测</strong>：生成短码后插入数据库（唯一索引），冲突则重新生成（概率极低）</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <h3>面试 STAR 描述模板</h3>
+        <div class="info-box info">
+          <strong>💡 STAR 法则</strong>
+          <ul>
+            <li><strong>S（背景）</strong>：营销部门大量使用短链接做推广投放，原有第三方服务费用高且无法定制</li>
+            <li><strong>T（任务）</strong>：自研短链接服务，日均跳转量 500 万+，P99 延迟 &lt; 5ms</li>
+            <li><strong>A（行动）</strong>：设计 Base62 编码 + 雪花算法 ID 生成，两级缓存 + 布隆过滤器防穿透，Kafka 异步统计</li>
+            <li><strong>R（结果）</strong>：跳转 QPS 1 万+，P99 延迟 3ms，缓存命中率 99.5%，年节省第三方服务费 10 万+</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ==================== 企业级权限管理系统 ==================== -->
+      <section class="knowledge-section" id="project-rbac">
+        <h2>🔐 企业级权限管理系统</h2>
+
+        <h3>项目简介</h3>
+        <p>基于 RBAC（Role-Based Access Control）模型的企业级权限管理系统，支持用户管理、角色管理、菜单权限、数据权限、操作日志审计等功能。作为公司内部多个业务系统的统一权限底座。</p>
+
+        <h3>技术栈</h3>
+        <table>
+          <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+          <tr><td>前端</td><td>Vue 3 + Element Plus</td><td>动态菜单、权限按钮控制</td></tr>
+          <tr><td>安全框架</td><td>Spring Security + JWT</td><td>认证授权、Token 无状态鉴权</td></tr>
+          <tr><td>服务层</td><td>Spring Boot 3 + MyBatis-Plus</td><td>用户/角色/菜单/权限管理</td></tr>
+          <tr><td>数据库</td><td>MySQL 8</td><td>用户表、角色表、菜单表、关联表</td></tr>
+          <tr><td>缓存</td><td>Redis</td><td>用户权限缓存、Token 黑名单</td></tr>
+          <tr><td>日志</td><td>ELK（Elasticsearch + Logstash + Kibana）</td><td>操作日志采集与检索</td></tr>
+          <tr><td>接口文档</td><td>Knife4j（Swagger 增强）</td><td>在线 API 文档</td></tr>
+        </table>
+
+        <h3>项目亮点</h3>
+        <ul>
+          <li><strong>RBAC 权限模型</strong>：用户 → 角色 → 权限三层模型，支持菜单权限（页面可见性）和按钮权限（操作控制）</li>
+          <li><strong>数据权限</strong>：基于 MyBatis 拦截器实现数据权限过滤（本人数据 / 本部门数据 / 全部数据），无需业务代码侵入</li>
+          <li><strong>动态菜单</strong>：前端路由根据用户权限动态生成，后端返回菜单树，前端递归渲染侧边栏</li>
+          <li><strong>JWT 无状态鉴权</strong>：Token 存储用户 ID + 角色列表，网关统一校验，无需 Session 共享</li>
+          <li><strong>操作审计日志</strong>：自定义注解 <code>@AuditLog</code> + AOP 切面，自动记录谁在什么时间做了什么操作</li>
+        </ul>
+
+        <h3>难题与解决方案</h3>
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题一：数据权限如何无侵入地实现</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>不同角色看到的数据范围不同（如销售只能看自己的客户，主管看部门全部），但不想在每个 SQL 里硬编码权限条件。</p>
+            <p><strong>解决方案：</strong></p>
+            <ol>
+              <li>自定义 <code>@DataScope</code> 注解，标注在 Mapper 方法上</li>
+              <li>MyBatis 拦截器（Interceptor）拦截查询 SQL</li>
+              <li>根据当前用户的角色和数据权限级别，自动拼接 <code>WHERE dept_id = ?</code> 或 <code>WHERE create_by = ?</code></li>
+              <li>业务代码完全无感知，只需加一个注解即可</li>
+            </ol>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>难题二：用户权限变更后 Token 如何即时生效</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>问题描述：</strong>JWT 是无状态的，用户角色被修改后，已签发的 Token 仍然有效，权限不会即时更新。</p>
+            <p><strong>解决方案：</strong></p>
+            <ul>
+              <li><strong>Token 版本号</strong>：用户表维护一个 <code>token_version</code> 字段，JWT 中携带版本号，校验时比对版本号，不匹配则拒绝</li>
+              <li><strong>Redis 黑名单</strong>：权限变更时将旧 Token 加入 Redis 黑名单（TTL 等于 Token 有效期），网关校验时先查黑名单</li>
+              <li><strong>权限缓存刷新</strong>：权限变更后主动清除该用户的 Redis 权限缓存，下次请求重新加载</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <h3>面试 STAR 描述模板</h3>
+        <div class="info-box info">
+          <strong>💡 STAR 法则</strong>
+          <ul>
+            <li><strong>S（背景）</strong>：公司有 10+ 业务系统，各自维护权限体系，管理混乱且存在安全隐患</li>
+            <li><strong>T（任务）</strong>：设计统一权限管理平台，支持菜单权限 + 数据权限 + 操作审计</li>
+            <li><strong>A（行动）</strong>：基于 RBAC 模型设计权限体系，MyBatis 拦截器实现无侵入数据权限，JWT + Redis 黑名单解决 Token 即时失效</li>
+            <li><strong>R（结果）</strong>：接入 8 个业务系统，统一权限管理，权限变更秒级生效，操作日志覆盖率 100%</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 项目面试通用技巧 -->
+      <section class="knowledge-section" id="project-tips">
+        <h2>💡 项目面试通用技巧</h2>
+
+        <h3>如何讲好项目故事</h3>
+        <ul>
+          <li><strong>先说业务背景</strong>：面试官不了解你的项目，先用 1-2 句话描述业务场景和核心目标</li>
+          <li><strong>突出你的贡献</strong>：用"我负责...""我设计...""我优化..."，而不是"我们团队..."</li>
+          <li><strong>用数据说话</strong>：QPS 从 X 提升到 Y、延迟从 A 降到 B、错误率从 C% 降到 D%</li>
+          <li><strong>讲清权衡取舍</strong>：为什么选 A 方案而不是 B 方案？有什么 trade-off？</li>
+          <li><strong>准备"踩坑"故事</strong>：遇到什么难题？怎么排查的？最终怎么解决的？</li>
+        </ul>
+
+        <h3>项目描述万能公式</h3>
+        <pre data-lang="text">背景 → 问题 → 方案 → 实现 → 效果
+
+示例：
+"大促期间 QPS 激增（背景），原系统数据库扛不住（问题），
+设计了多级缓存 + MQ 异步下单方案（方案），
+用 Redis Lua 保证库存扣减原子性，RocketMQ 事务消息保证最终一致（实现），
+最终 QPS 从 500 提升到 8000，零超卖零故障（效果）。"</pre>
+
+        <h3>常见追问及应对</h3>
+        <table>
+          <tr><th>追问</th><th>应对思路</th></tr>
+          <tr><td>为什么选这个技术？</td><td>对比 2-3 个方案，说清优劣和选型理由</td></tr>
+          <tr><td>有没有更好的方案？</td><td>承认当前方案的不足，提出改进方向</td></tr>
+          <tr><td>线上出过什么故障？</td><td>诚实描述，重点讲排查过程和事后复盘</td></tr>
+          <tr><td>如果用户量翻 10 倍？</td><td>分析瓶颈在哪，给出水平扩展方案</td></tr>
+          <tr><td>你在这个项目中学到了什么？</td><td>技术成长 + 工程思维 + 协作经验</td></tr>
+        </table>
+      </section>
+
+      <footer class="footer">
+        <p>java知识点总结 · 面向 Java 高级开发工程师面试</p>
+      </footer>
+    </div>
+  </main>
+  <script src="../js/main.js"></script>
+</body>
+</html>

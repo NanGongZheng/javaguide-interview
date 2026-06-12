@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>高频面试题精选 - JavaGuide 面试突击</title>
+  <title>高频面试题精选 - java知识点总结</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
 </head>
@@ -11,7 +11,7 @@
   <header class="header">
     <div class="header-left">
       <button class="menu-toggle" id="menuToggle">☰</button>
-      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>JavaGuide 面试突击</span></a>
+      <a href="../index.html" class="logo"><span class="logo-icon">J</span><span>java知识点总结</span></a>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="搜索知识点... (⌘K)" autocomplete="off">
         <div class="search-results" id="searchResults"></div>
@@ -29,6 +29,7 @@
     <div class="sidebar-section"><div class="sidebar-title">框架与生态</div><a href="spring.html" class="sidebar-link"><span class="icon">🌱</span>Spring 全家桶</a></div>
     <div class="sidebar-section"><div class="sidebar-title">数据库</div><a href="database.html" class="sidebar-link"><span class="icon">🗄️</span>MySQL 与 Redis</a></div>
     <div class="sidebar-section"><div class="sidebar-title">分布式与架构</div><a href="distribution.html" class="sidebar-link"><span class="icon">🏗️</span>分布式与系统设计</a></div>
+    <div class="sidebar-section"><div class="sidebar-title">实战项目</div><a href="projects.html" class="sidebar-link"><span class="icon">🚀</span>实战项目</a></div>
     <div class="sidebar-section"><div class="sidebar-title">面试专区</div><a href="interview.html" class="sidebar-link active"><span class="icon">🎯</span>高频面试题精选</a></div>
   </nav>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -39,7 +40,7 @@
 
       <div class="page-header">
         <h1>🎯 高频面试题精选</h1>
-        <p class="subtitle">精选 50+ 道 Java 高级开发面试高频题目，点击展开查看详细解答。涵盖 Java 基础、框架原理、数据库、分布式等核心领域。</p>
+        <p class="subtitle">精选 60+ 道 Java 高级开发面试高频题目，点击展开查看详细解答。涵盖 Java 基础、框架原理、数据库、分布式等核心领域。</p>
       </div>
 
       <div class="toc">
@@ -54,6 +55,9 @@
               <li>volatile 作用和原理</li>
               <li>线程池核心参数</li>
               <li>JVM 垃圾回收与 G1</li>
+              <li>JDK 21 虚拟线程</li>
+              <li>String 不可变原因</li>
+              <li>abstract class vs interface</li>
             </ul>
           </li>
           <li>
@@ -64,6 +68,8 @@
               <li>事务失效场景</li>
               <li>循环依赖解决</li>
               <li>AOP 实现原理</li>
+              <li>事务传播行为</li>
+              <li>Boot 自动配置原理</li>
             </ul>
           </li>
           <li>
@@ -74,6 +80,9 @@
               <li>慢 SQL 优化</li>
               <li>缓存三大问题</li>
               <li>Redis 与 MySQL 一致性</li>
+              <li>MySQL 主从复制原理</li>
+              <li>MyBatis #{} vs ${}</li>
+              <li>MyBatis 缓存机制</li>
             </ul>
           </li>
           <li>
@@ -83,6 +92,8 @@
               <li>消息不丢失 & 幂等</li>
               <li>CAP 与 BASE 理论</li>
               <li>秒杀系统设计</li>
+              <li>分布式 ID 生成方案</li>
+              <li>MQ 选型对比</li>
             </ul>
           </li>
           <li>
@@ -92,6 +103,8 @@
               <li>线上 CPU 飙高排查</li>
               <li>线上 OOM 排查</li>
               <li>接口限流方案</li>
+              <li>短链接系统设计</li>
+              <li>CI/CD 流程</li>
             </ul>
           </li>
         </ul>
@@ -555,10 +568,51 @@ jstack &lt;pid&gt; | grep &lt;tid_hex&gt; -A 30</pre>
             <p><strong>实现方案：</strong>Guava RateLimiter（单机）、Redis + Lua（分布式）、Sentinel（生产推荐，支持集群限流）。</p>
           </div></div>
         </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>如何设计一个短链接系统？</span>
+            <span class="difficulty hard">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>核心设计：</strong></p>
+            <ol>
+              <li><strong>短码生成</strong>：自增 ID + Base62 编码（6 位可表示 568 亿种组合）</li>
+              <li><strong>存储</strong>：MySQL 存长短链映射，Redis 缓存热点短链</li>
+              <li><strong>跳转</strong>：301 永久重定向（可缓存）或 302 临时重定向（便于统计）</li>
+              <li><strong>防重复</strong>：先查 Redis 是否已存在相同长链</li>
+            </ol>
+            <p><strong>进阶问题：</strong></p>
+            <ul>
+              <li>分布式 ID 冲突：雪花算法生成全局唯一 ID</li>
+              <li>热点 Key：本地缓存 + Redis 缓存 + 分片</li>
+              <li>过期清理：定时任务扫描 + 延迟队列</li>
+            </ul>
+          </div></div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span>你们项目的 CI/CD 流程是怎样的？</span>
+            <span class="difficulty easy">中频</span>
+            <span class="arrow">▼</span>
+          </div>
+          <div class="qa-answer"><div class="qa-answer-inner">
+            <p><strong>典型流程：</strong></p>
+            <ol>
+              <li><strong>代码提交</strong>：Git Push → 触发 Webhook</li>
+              <li><strong>CI 阶段</strong>：编译 → 单元测试 → 代码扫描（SonarQube）→ 构建镜像</li>
+              <li><strong>CD 阶段</strong>：推送到镜像仓库（Harbor）→ 部署到 K8s（滚动更新/蓝绿/金丝雀）</li>
+              <li><strong>监控</strong>：部署后自动检查健康接口，异常自动回滚</li>
+            </ol>
+            <p><strong>回答技巧：</strong>结合自己项目实际使用的工具（Jenkins/GitLab CI/GitHub Actions），突出自动化程度和质量保障。</p>
+          </div></div>
+        </div>
       </section>
 
       <footer class="footer">
-        <p>JavaGuide 面试突击 · 面向 Java 高级开发工程师面试</p>
+        <p>java知识点总结 · 面向 Java 高级开发工程师面试</p>
       </footer>
     </div>
   </main>
